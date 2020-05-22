@@ -20,23 +20,11 @@ class CharacterAnimator extends StatelessWidget {
 
     return Column(
       children: <Widget>[
-        // Text('Number of strokes: ' + parsedJson['strokes'].length.toString() + '\nFirst stroke: ' + parsedJson['strokes'][0]),
-        Expanded(
-            child: Stack(
-          children: <Widget>[
-            ...List.generate(
-              strokes.length,
-              (index) => FittedBox(
-                child: SizedBox(
-                  width: 1024,
-                  height: 1024,
-                  child: CustomPaint(
-                      painter: MyPainter(strokes[index], Colors.blue, showPath: false)),
-                ),
-              ),
-            ),
-          ],
-        ))
+        Text('Number of strokes: ' +
+            parsedJson['strokes'].length.toString() +
+            '\nFirst stroke: ' +
+            parsedJson['strokes'][0]),
+        showCharacter(strokes, Colors.grey),
       ],
     );
   }
@@ -65,4 +53,23 @@ class MyPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(CustomPainter oldDelegate) => true;
+}
+
+showCharacter(List<Path> strokes, Color color) {
+  return Expanded(
+      child: Stack(
+    children: <Widget>[
+      ...List.generate(
+        strokes.length,
+        (index) => FittedBox(
+          child: SizedBox(
+            width: 1024,
+            height: 1024,
+            child: CustomPaint(
+                painter: MyPainter(strokes[index], color, showPath: false)),
+          ),
+        ),
+      ),
+    ],
+  ));
 }
