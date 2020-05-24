@@ -80,6 +80,8 @@ class _CharacterAnimatorState extends State<CharacterAnimator>
                     strokeColor: Colors.blue,
                     showOutline: true,
                     outlineColor: Colors.red,
+                    showMedian: true,
+                    medianColor: Colors.black,
                     animate: true,
                     animation: _controller,
                     median: medians[0])),
@@ -97,12 +99,13 @@ class StrokePainter extends CustomPainter {
   final Path strokeOutlinePath;
   final Color strokeColor;
   final Color outlineColor;
+  final Color medianColor;
   final bool showOutline;
   final bool showStroke;
+  final bool showMedian;
   final List<List<int>> median;
 
   Path visibleStroke = Path();
-  Path medianPath;
   CostumPath customMedianPath;
 
   StrokePainter(
@@ -111,6 +114,8 @@ class StrokePainter extends CustomPainter {
     this.strokeColor = Colors.grey,
     this.showOutline = false,
     this.outlineColor = Colors.black,
+    this.showMedian = false,
+    this.medianColor = Colors.black,
     this.animate = false,
     this.animation,
     this.median = const [<int>[]],
@@ -118,16 +123,8 @@ class StrokePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (medianPath == null) {
+    if (customMedianPath == null) {
       customMedianPath = CostumPath(median);
-      medianPath = Path();
-      medianPath.moveTo(median[0][0].toDouble(), median[0][1].toDouble());
-      for (var point in median) {
-        medianPath.lineTo(point[0].toDouble(), point[1].toDouble());
-      }
-
-      // medianPathLength =
-      //     medianPath.computeMetrics().toList()[0].length.toDouble();
     }
 
     var strokePaint = Paint()
@@ -137,25 +134,26 @@ class StrokePainter extends CustomPainter {
 
     if (showStroke) {
       if (animate == true && animation != null && median[0].isNotEmpty) {
-        final brushPosition = customMedianPath.getCoordinatesAt(animation.value * customMedianPath.pathLength);
+        final brushPosition = customMedianPath
+            .getCoordinatesAt(animation.value * customMedianPath.pathLength);
 
         Path brush = Path();
         brush.addArc(
             Rect.fromCenter(
-                center:
-                    Offset(brushPosition[0], brushPosition[1]),
+                center: Offset(brushPosition[0], brushPosition[1]),
                 width: 50,
                 height: 50),
             0,
             2 * pi);
         canvas.drawPath(brush, Paint()..style = PaintingStyle.stroke);
-        canvas.drawPath(medianPath, Paint()..style = PaintingStyle.stroke);
 
         // Combine (union) the current intersection of brush and stroke with what was previously drawn
         // visibleStroke = Path.combine(PathOperation.union, visibleStroke,
         //     Path.combine(PathOperation.intersect, brush, strokeOutlinePath));
 
-        canvas.drawPath(Path.combine(PathOperation.intersect, brush, strokeOutlinePath), strokePaint);
+        canvas.drawPath(
+            Path.combine(PathOperation.intersect, brush, strokeOutlinePath),
+            strokePaint);
       } else {
         canvas.drawPath(strokeOutlinePath, strokePaint);
       }
@@ -168,6 +166,19 @@ class StrokePainter extends CustomPainter {
         ..style = PaintingStyle.stroke;
       canvas.drawPath(strokeOutlinePath, borderPaint);
     }
+
+    if (showMedian) {
+      final medianPath = Path();
+      medianPath.moveTo(median[0][0].toDouble(), median[0][1].toDouble());
+      for (var point in median) {
+        medianPath.lineTo(point[0].toDouble(), point[1].toDouble());
+      }
+      canvas.drawPath(
+          medianPath,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..color = medianColor);
+    }
   }
 
   @override
@@ -178,7 +189,7 @@ class CostumPath {
   // final List<List<int>> median;
   final List<Segment> _segments = [];
   final List<double> _segmentStartLengths = [0];
-  
+
   double pathLength = 0;
 
   CostumPath(List<List<int>> median) {
@@ -207,25 +218,23 @@ class CostumPath {
     length = length.clamp(0, pathLength - 0.1);
 
     for (var iSegment = 0; iSegment < _segments.length; iSegment++) {
-
-      final segment =_segments[iSegment];
+      final segment = _segments[iSegment];
       final segmentStartLength = _segmentStartLengths[iSegment];
 
       // Check if queried length is on the segment
       if (segmentStartLength + segment.length > length) {
-        final fractionOfSegment = (length - segmentStartLength)/segment.length;
+        final fractionOfSegment =
+            (length - segmentStartLength) / segment.length;
 
         final xOffset = (segment.end[0] - segment.start[0]) * fractionOfSegment;
         final yOffset = (segment.end[1] - segment.start[1]) * fractionOfSegment;
 
         return [segment.start[0] + xOffset, segment.start[1] + yOffset];
-
       }
     }
 
     return [0, 0];
   }
-
 }
 
 class Segment {
