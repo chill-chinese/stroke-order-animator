@@ -17,6 +17,7 @@ class CharacterAnimator extends StatefulWidget {
 class _CharacterAnimatorState extends State<CharacterAnimator>
     with SingleTickerProviderStateMixin {
   AnimationController _controller;
+  bool isAnimating = false;
 
   @override
   void initState() {
@@ -33,11 +34,21 @@ class _CharacterAnimatorState extends State<CharacterAnimator>
   }
 
   void _startAnimation() {
-    _controller.stop();
-    _controller.reset();
-    _controller.repeat(
-      period: Duration(seconds: 5),
-    );
+    setState(() {
+      isAnimating = true;
+      _controller.stop();
+      _controller.reset();
+      _controller.repeat(
+        period: Duration(seconds: 5),
+      );
+    });
+  }
+
+  void _stopAnimation() {
+    setState(() {
+      _controller.stop();
+      isAnimating = false;
+    });
   }
 
   @override
@@ -64,29 +75,44 @@ class _CharacterAnimatorState extends State<CharacterAnimator>
     return Column(
       children: <Widget>[
         Text('Number of strokes: ' + strokes.length.toString()),
-        MaterialButton(
-          onPressed: () {
-            _startAnimation();
-          },
-          child: Text("Animate"),
+        Stack(
+          children: <Widget>[
+            ...List.generate(
+              strokes.length,
+              (index) => FittedBox(
+                child: SizedBox(
+                  width: 1024,
+                  height: 1024,
+                  child: CustomPaint(
+                      painter: StrokePainter(strokes[index],
+                          showStroke: true,
+                          strokeColor: Colors.blue,
+                          showOutline: true,
+                          outlineColor: Colors.red,
+                          showMedian: true,
+                          medianColor: Colors.black,
+                          animate: isAnimating,
+                          animation: _controller,
+                          median: medians[index])),
+                ),
+              ),
+            ),
+          ],
         ),
-        FittedBox(
-          child: SizedBox(
-            width: 1024,
-            height: 1024,
-            child: CustomPaint(
-                painter: StrokePainter(strokes[0],
-                    showStroke: true,
-                    strokeColor: Colors.blue,
-                    showOutline: true,
-                    outlineColor: Colors.red,
-                    showMedian: true,
-                    medianColor: Colors.black,
-                    animate: true,
-                    animation: _controller,
-                    median: medians[0])),
+        if (!isAnimating)
+          MaterialButton(
+            onPressed: () {
+              _startAnimation();
+            },
+            child: Text("Start animation"),
           ),
-        ),
+        if (isAnimating)
+          MaterialButton(
+            onPressed: () {
+              _stopAnimation();
+            },
+            child: Text("Stop animation"),
+          ),
       ],
     );
   }
