@@ -238,7 +238,7 @@ class CostumPath {
 
   // Return the coordinates of the point at a given percentage of the whole path
   List<double> getCoordinatesAt(double length) {
-    length = length.clamp(0, pathLength - 0.1);
+    length = length.clamp(0, pathLength - 0.001);
 
     for (var iSegment = 0; iSegment < _segments.length; iSegment++) {
       final segment = _segments[iSegment];
@@ -256,7 +256,7 @@ class CostumPath {
       }
     }
 
-    return [0, 0];
+    return _segments.last.end;
   }
 }
 
