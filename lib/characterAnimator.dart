@@ -103,6 +103,7 @@ class StrokePainter extends CustomPainter {
 
   Path visibleStroke = Path();
   Path medianPath;
+  CostumPath customMedianPath;
 
   StrokePainter(
     this.strokeOutlinePath, {
@@ -117,13 +118,16 @@ class StrokePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-
     if (medianPath == null) {
+      customMedianPath = CostumPath(median);
       medianPath = Path();
       medianPath.moveTo(median[0][0].toDouble(), median[0][1].toDouble());
       for (var point in median) {
         medianPath.lineTo(point[0].toDouble(), point[1].toDouble());
       }
+
+      // medianPathLength =
+      //     medianPath.computeMetrics().toList()[0].length.toDouble();
     }
 
     var strokePaint = Paint()
@@ -133,11 +137,13 @@ class StrokePainter extends CustomPainter {
 
     if (showStroke) {
       if (animate == true && animation != null && median[0].isNotEmpty) {
+        final brushPosition = customMedianPath.getCoordinatesAt(animation.value * customMedianPath.pathLength);
+
         Path brush = Path();
         brush.addArc(
             Rect.fromCenter(
-                center: Offset(median[0][0].toDouble(),
-                    median[0][1].toDouble() + 100 * animation.value),
+                center:
+                    Offset(brushPosition[0], brushPosition[1]),
                 width: 50,
                 height: 50),
             0,
@@ -146,10 +152,10 @@ class StrokePainter extends CustomPainter {
         canvas.drawPath(medianPath, Paint()..style = PaintingStyle.stroke);
 
         // Combine (union) the current intersection of brush and stroke with what was previously drawn
-        visibleStroke = Path.combine(PathOperation.union, visibleStroke,
-            Path.combine(PathOperation.intersect, brush, strokeOutlinePath));
+        // visibleStroke = Path.combine(PathOperation.union, visibleStroke,
+        //     Path.combine(PathOperation.intersect, brush, strokeOutlinePath));
 
-        canvas.drawPath(visibleStroke, strokePaint);
+        canvas.drawPath(Path.combine(PathOperation.intersect, brush, strokeOutlinePath), strokePaint);
       } else {
         canvas.drawPath(strokeOutlinePath, strokePaint);
       }
@@ -166,6 +172,69 @@ class StrokePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(CustomPainter oldDelegate) => true;
+}
+
+class CostumPath {
+  // final List<List<int>> median;
+  final List<Segment> _segments = [];
+  final List<double> _segmentStartLengths = [0];
+  
+  double pathLength = 0;
+
+  CostumPath(List<List<int>> median) {
+    // Split the stroke into segments
+    // Every segment has start and end position and a length
+    for (var iSegment = 0; iSegment < median.length - 1; iSegment++) {
+      _segments.add(Segment([
+        median[iSegment][0].toDouble(),
+        median[iSegment][1].toDouble()
+      ], [
+        median[iSegment + 1][0].toDouble(),
+        median[iSegment + 1][1].toDouble()
+      ]));
+    }
+
+    for (var iSegment = 1; iSegment < _segments.length; iSegment++) {
+      _segmentStartLengths.add(
+          _segmentStartLengths[iSegment - 1] + _segments[iSegment - 1].length);
+    }
+
+    pathLength = _segmentStartLengths.last + _segments.last.length;
+  }
+
+  // Return the coordinates of the point at a given percentage of the whole path
+  List<double> getCoordinatesAt(double length) {
+    length = length.clamp(0, pathLength - 0.1);
+
+    for (var iSegment = 0; iSegment < _segments.length; iSegment++) {
+
+      final segment =_segments[iSegment];
+      final segmentStartLength = _segmentStartLengths[iSegment];
+
+      // Check if queried length is on the segment
+      if (segmentStartLength + segment.length > length) {
+        final fractionOfSegment = (length - segmentStartLength)/segment.length;
+
+        final xOffset = (segment.end[0] - segment.start[0]) * fractionOfSegment;
+        final yOffset = (segment.end[1] - segment.start[1]) * fractionOfSegment;
+
+        return [segment.start[0] + xOffset, segment.start[1] + yOffset];
+
+      }
+    }
+
+    return [0, 0];
+  }
+
+}
+
+class Segment {
+  final List<double> start;
+  final List<double> end;
+  double length;
+  Segment(this.start, this.end) {
+    length = sqrt(pow((end[0] - start[0]), 2) + pow((end[1] - start[1]), 2));
+  }
 }
 
 // showCharacter(List<Path> strokes, Color color) {
