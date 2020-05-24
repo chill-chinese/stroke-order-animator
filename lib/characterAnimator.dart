@@ -23,6 +23,7 @@ class _CharacterAnimatorState extends State<CharacterAnimator>
   void initState() {
     super.initState();
     _controller = AnimationController(
+      duration: Duration(seconds: 3),
       vsync: this,
     );
   }
@@ -38,9 +39,7 @@ class _CharacterAnimatorState extends State<CharacterAnimator>
       isAnimating = true;
       _controller.stop();
       _controller.reset();
-      _controller.repeat(
-        period: Duration(seconds: 5),
-      );
+      _controller.forward();
     });
   }
 
@@ -160,26 +159,24 @@ class StrokePainter extends CustomPainter {
 
     if (showStroke) {
       if (animate == true && animation != null && median[0].isNotEmpty) {
-        final brushPosition = customMedianPath
-            .getCoordinatesAt(animation.value * customMedianPath.pathLength);
+        for (double value = 0; value < animation.value; value+=0.01) {
+          final brushPosition = customMedianPath
+              .getCoordinatesAt(value * customMedianPath.pathLength);
 
-        Path brush = Path();
-        brush.addArc(
-            Rect.fromCenter(
-                center: Offset(brushPosition[0], brushPosition[1]),
-                width: 50,
-                height: 50),
-            0,
-            2 * pi);
-        canvas.drawPath(brush, Paint()..style = PaintingStyle.stroke);
+          Path brush = Path();
+          brush.addArc(
+              Rect.fromCenter(
+                  center: Offset(brushPosition[0], brushPosition[1]),
+                  width: 50,
+                  height: 50),
+              0,
+              2 * pi);
+          // canvas.drawPath(brush, Paint()..style = PaintingStyle.stroke);
 
-        // Combine (union) the current intersection of brush and stroke with what was previously drawn
-        // visibleStroke = Path.combine(PathOperation.union, visibleStroke,
-        //     Path.combine(PathOperation.intersect, brush, strokeOutlinePath));
-
-        canvas.drawPath(
-            Path.combine(PathOperation.intersect, brush, strokeOutlinePath),
-            strokePaint);
+          canvas.drawPath(
+              Path.combine(PathOperation.intersect, brush, strokeOutlinePath),
+              strokePaint);
+        }
       } else {
         canvas.drawPath(strokeOutlinePath, strokePaint);
       }
