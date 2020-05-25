@@ -87,7 +87,7 @@ class _CharacterAnimatorState extends State<CharacterAnimator>
                           showStroke: true,
                           strokeColor: Colors.blue,
                           showOutline: true,
-                          outlineColor: Colors.red,
+                          outlineColor: Colors.black,
                           showMedian: true,
                           medianColor: Colors.black,
                           animate: isAnimating,
@@ -152,8 +152,8 @@ class StrokePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (strokeStart.isEmpty) {
       // Calculate the points on strokeOutlinePath that are closest to the start and end points of the median
-       strokeStart = getClosestPointOnPath(strokeOutlinePath, median.first);
-       strokeEnd = getClosestPointOnPath(strokeOutlinePath, median.last);
+      strokeStart = getClosestPointOnPath(strokeOutlinePath, median.first);
+      strokeEnd = getClosestPointOnPath(strokeOutlinePath, median.last);
     }
 
     var strokePaint = Paint()
@@ -164,31 +164,41 @@ class StrokePainter extends CustomPainter {
     if (showStroke) {
       if (animate == true && animation != null && median[0].isNotEmpty) {
         if (strokeStart.isNotEmpty && strokeEnd.isNotEmpty) {
-          // Split the original path into two paths that follow the outline 
+          // Split the original path into two paths that follow the outline
           // of the stroke from strokeStart to strokeEnd clockwise and counter-clockwise
-          List<Path> contourPaths = extractContourPaths(strokeOutlinePath, strokeStart, strokeEnd);
-          
-          
-          
-          
-          
-          
+          List<Path> contourPaths = extractContourPaths(
+              strokeOutlinePath, strokeStart.last, strokeEnd.last);
+          canvas.drawPath(
+              contourPaths.first,
+              Paint()
+                ..style = PaintingStyle.stroke
+                ..color = Colors.red
+                ..strokeWidth = 10);
+          canvas.drawPath(
+              contourPaths.last,
+              Paint()
+                ..style = PaintingStyle.stroke
+                ..color = Colors.green
+                ..strokeWidth = 10);
+
           Path brush = Path();
-            brush.addArc(
-                Rect.fromCenter(
-                    center: Offset(strokeStart[0], strokeStart[1]),
-                    width: 50,
-                    height: 50),
-                0,
-                2 * pi);
-            brush.addArc(
-                Rect.fromCenter(
-                    center: Offset(strokeEnd[0], strokeEnd[1]),
-                    width: 50,
-                    height: 50),
-                0,
-                2 * pi);
-            canvas.drawPath(brush, Paint()..style = PaintingStyle.stroke);
+          brush.addArc(
+              Rect.fromCenter(
+                  center: Offset(strokeStart[0], strokeStart[1]),
+                  width: 50,
+                  height: 50),
+              0,
+              2 * pi);
+          brush.addArc(
+              Rect.fromCenter(
+                  center: Offset(strokeEnd[0], strokeEnd[1]),
+                  width: 50,
+                  height: 50),
+              0,
+              2 * pi);
+          canvas.drawPath(brush, Paint()..style = PaintingStyle.stroke);
+        } else {
+          print("bsasd");
         }
       } else {
         canvas.drawPath(strokeOutlinePath, strokePaint);
@@ -221,9 +231,25 @@ class StrokePainter extends CustomPainter {
   bool shouldRepaint(CustomPainter oldDelegate) => true;
 }
 
-List<Path> extractContourPaths(strokeOutlinePath, strokeStart, strokeEnd) {
+List<Path> extractContourPaths(
+    Path strokeOutlinePath, double strokeStartLength, double strokeEndLength) {
+  Path path1 = Path();
+  Path path2 = Path();
 
-  return [];
+  final metrics = strokeOutlinePath.computeMetrics().toList()[0];
+
+  if (strokeEndLength > strokeStartLength) {
+    path1 = metrics.extractPath(strokeStartLength, strokeEndLength);
+    path2 = metrics.extractPath(strokeEndLength, metrics.length);
+    path2.addPath(metrics.extractPath(0, strokeStartLength), Offset(0, 0));
+  } else {
+    path1 = metrics.extractPath(strokeStartLength, metrics.length);
+    path1.addPath(metrics.extractPath(0, strokeEndLength), Offset(0, 0));
+    path2 = metrics.extractPath(strokeEndLength, strokeStartLength);
+  }
+
+  // path1 leads from start to end, path2 continues from end to start
+  return [path1, path2];
 }
 
 List<double> getClosestPointOnPath(Path path, List<int> queryPoint) {
@@ -249,10 +275,11 @@ List<double> getClosestPointOnPath(Path path, List<int> queryPoint) {
   // Find the point on the path closest to the query
   for (var iPoint = 0; iPoint < pointsOnPath.length; iPoint++) {
     final point = pointsOnPath[iPoint];
-    final distance = distance2D(point, queryPoint.map((e) => e.toDouble()).toList());
+    final distance =
+        distance2D(point, queryPoint.map((e) => e.toDouble()).toList());
     if (distance < minDistance) {
       minDistance = distance;
-      closestPoint = [point[0], point[1], iPoint*stepSize];
+      closestPoint = [point[0], point[1], iPoint * stepSize];
     }
   }
 
