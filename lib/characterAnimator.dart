@@ -23,7 +23,7 @@ class _CharacterAnimatorState extends State<CharacterAnimator>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: Duration(seconds: 1),
+      duration: Duration(seconds: 3),
       vsync: this,
     );
   }
@@ -54,6 +54,7 @@ class _CharacterAnimatorState extends State<CharacterAnimator>
   Widget build(BuildContext context) {
     var parsedJson = json.decode(widget.strokeOrder.replaceAll("'", '"'));
 
+    // Transformation according to the makemeahanzi documentation
     final List<Path> strokes = List.generate(
         parsedJson['strokes'].length,
         (index) => parseSvgPath(parsedJson['strokes'][index]).transform(
@@ -86,7 +87,7 @@ class _CharacterAnimatorState extends State<CharacterAnimator>
                       painter: StrokePainter(strokes[index],
                           showStroke: true,
                           strokeColor: Colors.blue,
-                          showOutline: true,
+                          showOutline: false,
                           outlineColor: Colors.black,
                           showMedian: false,
                           medianColor: Colors.black,
@@ -160,7 +161,6 @@ class StrokePainter extends CustomPainter {
 
       var strokePaint = Paint()
       ..color = strokeColor
-      ..strokeWidth = 4.0
       ..style = PaintingStyle.fill;
 
       if (animate == true && animation != null && median[0].isNotEmpty) {
@@ -174,41 +174,10 @@ class StrokePainter extends CustomPainter {
           final lenFirstPath = contourPaths.first.computeMetrics().first.length;
           final lenSecondPath = contourPaths.last.computeMetrics().first.length;
 
-          Path drawPath = contourPaths.first.computeMetrics().first.extractPath(0, animation.value*lenFirstPath);
-          drawPath.extendWithPath(contourPaths.last.computeMetrics().first.extractPath(lenSecondPath - animation.value*lenSecondPath, lenSecondPath), Offset(0, 0));
-          canvas.drawPath(drawPath, strokePaint);
+          Path finalOutlinePath = contourPaths.first.computeMetrics().first.extractPath(0, animation.value*lenFirstPath);
+          finalOutlinePath.extendWithPath(contourPaths.last.computeMetrics().first.extractPath(lenSecondPath - animation.value*lenSecondPath, lenSecondPath), Offset(0, 0));
 
-
-
-          // canvas.drawPath(
-          //     contourPaths.first,
-          //     Paint()
-          //       ..style = PaintingStyle.stroke
-          //       ..color = Colors.red
-          //       ..strokeWidth = 4);
-          // canvas.drawPath(
-          //     contourPaths.last,
-          //     Paint()
-          //       ..style = PaintingStyle.stroke
-          //       ..color = Colors.green
-          //       ..strokeWidth = 4);
-
-          Path brush = Path();
-          brush.addArc(
-              Rect.fromCenter(
-                  center: Offset(strokeStart[0], strokeStart[1]),
-                  width: 50,
-                  height: 50),
-              0,
-              2 * pi);
-          brush.addArc(
-              Rect.fromCenter(
-                  center: Offset(strokeEnd[0], strokeEnd[1]),
-                  width: 50,
-                  height: 50),
-              0,
-              2 * pi);
-          // canvas.drawPath(brush, Paint()..style = PaintingStyle.stroke);
+          canvas.drawPath(finalOutlinePath, strokePaint);
         } else {
           print("bsasd");
         }
