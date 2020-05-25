@@ -1,4 +1,4 @@
-import 'package:character_animator/strokeOrderAnimator.dart';
+import 'package:stroke_order_animator/strokeOrderAnimator.dart';
 import 'package:flutter/material.dart';
 
 void main() {

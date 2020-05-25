@@ -1,4 +1,4 @@
-# character_animator
+# stroke_order_animator
 
 A new Flutter project.
 
