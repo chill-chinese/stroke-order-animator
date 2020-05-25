@@ -130,8 +130,10 @@ class StrokePainter extends CustomPainter {
   final bool showMedian;
   final List<List<int>> median;
 
+  List<double> strokeStart = [];
+  List<double> strokeEnd = [];
+
   Path visibleStroke = Path();
-  CostumPath customMedianPath;
 
   StrokePainter(
     this.strokeOutlinePath, {
@@ -148,8 +150,10 @@ class StrokePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (customMedianPath == null) {
-      customMedianPath = CostumPath(median);
+    if (strokeStart.isEmpty) {
+      // Calculate the points on strokeOutlinePath that are closest to the start and end points of the median
+       strokeStart = getClosestPointOnPath(strokeOutlinePath, median.first);
+       strokeEnd = getClosestPointOnPath(strokeOutlinePath, median.last);
     }
 
     var strokePaint = Paint()
@@ -159,23 +163,32 @@ class StrokePainter extends CustomPainter {
 
     if (showStroke) {
       if (animate == true && animation != null && median[0].isNotEmpty) {
-        for (double value = 0; value < animation.value; value+=0.01) {
-          final brushPosition = customMedianPath
-              .getCoordinatesAt(value * customMedianPath.pathLength);
-
+        if (strokeStart.isNotEmpty && strokeEnd.isNotEmpty) {
+          // Split the original path into two paths that follow the outline 
+          // of the stroke from strokeStart to strokeEnd clockwise and counter-clockwise
+          List<Path> contourPaths = extractContourPaths(strokeOutlinePath, strokeStart, strokeEnd);
+          
+          
+          
+          
+          
+          
           Path brush = Path();
-          brush.addArc(
-              Rect.fromCenter(
-                  center: Offset(brushPosition[0], brushPosition[1]),
-                  width: 50,
-                  height: 50),
-              0,
-              2 * pi);
-          // canvas.drawPath(brush, Paint()..style = PaintingStyle.stroke);
-
-          canvas.drawPath(
-              Path.combine(PathOperation.intersect, brush, strokeOutlinePath),
-              strokePaint);
+            brush.addArc(
+                Rect.fromCenter(
+                    center: Offset(strokeStart[0], strokeStart[1]),
+                    width: 50,
+                    height: 50),
+                0,
+                2 * pi);
+            brush.addArc(
+                Rect.fromCenter(
+                    center: Offset(strokeEnd[0], strokeEnd[1]),
+                    width: 50,
+                    height: 50),
+                0,
+                2 * pi);
+            canvas.drawPath(brush, Paint()..style = PaintingStyle.stroke);
         }
       } else {
         canvas.drawPath(strokeOutlinePath, strokePaint);
@@ -208,81 +221,44 @@ class StrokePainter extends CustomPainter {
   bool shouldRepaint(CustomPainter oldDelegate) => true;
 }
 
-class CostumPath {
-  // final List<List<int>> median;
-  final List<Segment> _segments = [];
-  final List<double> _segmentStartLengths = [0];
+List<Path> extractContourPaths(strokeOutlinePath, strokeStart, strokeEnd) {
 
-  double pathLength = 0;
-
-  CostumPath(List<List<int>> median) {
-    // Split the stroke into segments
-    // Every segment has start and end position and a length
-    for (var iSegment = 0; iSegment < median.length - 1; iSegment++) {
-      _segments.add(Segment([
-        median[iSegment][0].toDouble(),
-        median[iSegment][1].toDouble()
-      ], [
-        median[iSegment + 1][0].toDouble(),
-        median[iSegment + 1][1].toDouble()
-      ]));
-    }
-
-    for (var iSegment = 1; iSegment < _segments.length; iSegment++) {
-      _segmentStartLengths.add(
-          _segmentStartLengths[iSegment - 1] + _segments[iSegment - 1].length);
-    }
-
-    pathLength = _segmentStartLengths.last + _segments.last.length;
-  }
-
-  // Return the coordinates of the point at a given percentage of the whole path
-  List<double> getCoordinatesAt(double length) {
-    length = length.clamp(0, pathLength - 0.001);
-
-    for (var iSegment = 0; iSegment < _segments.length; iSegment++) {
-      final segment = _segments[iSegment];
-      final segmentStartLength = _segmentStartLengths[iSegment];
-
-      // Check if queried length is on the segment
-      if (segmentStartLength + segment.length > length) {
-        final fractionOfSegment =
-            (length - segmentStartLength) / segment.length;
-
-        final xOffset = (segment.end[0] - segment.start[0]) * fractionOfSegment;
-        final yOffset = (segment.end[1] - segment.start[1]) * fractionOfSegment;
-
-        return [segment.start[0] + xOffset, segment.start[1] + yOffset];
-      }
-    }
-
-    return _segments.last.end;
-  }
+  return [];
 }
 
-class Segment {
-  final List<double> start;
-  final List<double> end;
-  double length;
-  Segment(this.start, this.end) {
-    length = sqrt(pow((end[0] - start[0]), 2) + pow((end[1] - start[1]), 2));
+List<double> getClosestPointOnPath(Path path, List<int> queryPoint) {
+  PathMetric metrics = path.computeMetrics().toList()[0];
+
+  int nSteps = 100;
+  double pathLength = metrics.length;
+  double stepSize = pathLength / nSteps;
+
+  List<List<double>> pointsOnPath = [];
+
+  double minDistance = double.infinity;
+
+  // x, y, and length on the path where that point lies
+  List<double> closestPoint = [0, 0, 0];
+
+  // Sample nSteps points on the path
+  for (var step = 0.0; step < pathLength; step += stepSize) {
+    final tangent = metrics.getTangentForOffset(step);
+    pointsOnPath.add([tangent.position.dx, tangent.position.dy]);
   }
+
+  // Find the point on the path closest to the query
+  for (var iPoint = 0; iPoint < pointsOnPath.length; iPoint++) {
+    final point = pointsOnPath[iPoint];
+    final distance = distance2D(point, queryPoint.map((e) => e.toDouble()).toList());
+    if (distance < minDistance) {
+      minDistance = distance;
+      closestPoint = [point[0], point[1], iPoint*stepSize];
+    }
+  }
+
+  return closestPoint;
 }
 
-// showCharacter(List<Path> strokes, Color color) {
-//   return Expanded(
-//       child: Stack(
-//     children: <Widget>[
-//       ...List.generate(
-//         strokes.length,
-//         (index) => FittedBox(
-//           child: SizedBox(
-//             width: 1024,
-//             height: 1024,
-//             child: CustomPaint(painter: StrokePainter(strokes[index], color)),
-//           ),
-//         ),
-//       ),
-//     ],
-//   ));
-// }
+double distance2D(List<double> p, List<double> q) {
+  return sqrt(pow(p[0] - q[0], 2) + pow(p[1] - q[1], 2));
+}
