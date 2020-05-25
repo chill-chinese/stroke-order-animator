@@ -23,7 +23,7 @@ class _CharacterAnimatorState extends State<CharacterAnimator>
   void initState() {
     super.initState();
     _controller = AnimationController(
-      duration: Duration(seconds: 3),
+      duration: Duration(seconds: 1),
       vsync: this,
     );
   }
@@ -88,7 +88,7 @@ class _CharacterAnimatorState extends State<CharacterAnimator>
                           strokeColor: Colors.blue,
                           showOutline: true,
                           outlineColor: Colors.black,
-                          showMedian: true,
+                          showMedian: false,
                           medianColor: Colors.black,
                           animate: isAnimating,
                           animation: _controller,
@@ -156,30 +156,42 @@ class StrokePainter extends CustomPainter {
       strokeEnd = getClosestPointOnPath(strokeOutlinePath, median.last);
     }
 
-    var strokePaint = Paint()
+    if (showStroke) {
+
+      var strokePaint = Paint()
       ..color = strokeColor
       ..strokeWidth = 4.0
       ..style = PaintingStyle.fill;
 
-    if (showStroke) {
       if (animate == true && animation != null && median[0].isNotEmpty) {
         if (strokeStart.isNotEmpty && strokeEnd.isNotEmpty) {
           // Split the original path into two paths that follow the outline
           // of the stroke from strokeStart to strokeEnd clockwise and counter-clockwise
           List<Path> contourPaths = extractContourPaths(
               strokeOutlinePath, strokeStart.last, strokeEnd.last);
-          canvas.drawPath(
-              contourPaths.first,
-              Paint()
-                ..style = PaintingStyle.stroke
-                ..color = Colors.red
-                ..strokeWidth = 10);
-          canvas.drawPath(
-              contourPaths.last,
-              Paint()
-                ..style = PaintingStyle.stroke
-                ..color = Colors.green
-                ..strokeWidth = 10);
+
+          // Go on the first contourPath first, then jump over to the second path and go back to the start
+          final lenFirstPath = contourPaths.first.computeMetrics().first.length;
+          final lenSecondPath = contourPaths.last.computeMetrics().first.length;
+
+          Path drawPath = contourPaths.first.computeMetrics().first.extractPath(0, animation.value*lenFirstPath);
+          drawPath.extendWithPath(contourPaths.last.computeMetrics().first.extractPath(lenSecondPath - animation.value*lenSecondPath, lenSecondPath), Offset(0, 0));
+          canvas.drawPath(drawPath, strokePaint);
+
+
+
+          // canvas.drawPath(
+          //     contourPaths.first,
+          //     Paint()
+          //       ..style = PaintingStyle.stroke
+          //       ..color = Colors.red
+          //       ..strokeWidth = 4);
+          // canvas.drawPath(
+          //     contourPaths.last,
+          //     Paint()
+          //       ..style = PaintingStyle.stroke
+          //       ..color = Colors.green
+          //       ..strokeWidth = 4);
 
           Path brush = Path();
           brush.addArc(
@@ -196,7 +208,7 @@ class StrokePainter extends CustomPainter {
                   height: 50),
               0,
               2 * pi);
-          canvas.drawPath(brush, Paint()..style = PaintingStyle.stroke);
+          // canvas.drawPath(brush, Paint()..style = PaintingStyle.stroke);
         } else {
           print("bsasd");
         }
@@ -241,10 +253,10 @@ List<Path> extractContourPaths(
   if (strokeEndLength > strokeStartLength) {
     path1 = metrics.extractPath(strokeStartLength, strokeEndLength);
     path2 = metrics.extractPath(strokeEndLength, metrics.length);
-    path2.addPath(metrics.extractPath(0, strokeStartLength), Offset(0, 0));
+    path2.extendWithPath(metrics.extractPath(0, strokeStartLength), Offset(0, 0));
   } else {
     path1 = metrics.extractPath(strokeStartLength, metrics.length);
-    path1.addPath(metrics.extractPath(0, strokeEndLength), Offset(0, 0));
+    path1.extendWithPath(metrics.extractPath(0, strokeEndLength), Offset(0, 0));
     path2 = metrics.extractPath(strokeEndLength, strokeStartLength);
   }
 
