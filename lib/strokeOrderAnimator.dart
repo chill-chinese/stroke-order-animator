@@ -5,16 +5,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:svg_path_parser/svg_path_parser.dart';
 
-class CharacterAnimator extends StatefulWidget {
+class StrokeOrderAnimator extends StatefulWidget {
   final String strokeOrder;
 
-  CharacterAnimator(this.strokeOrder);
+  StrokeOrderAnimator(this.strokeOrder);
 
   @override
-  _CharacterAnimatorState createState() => _CharacterAnimatorState();
+  _StrokeOrderAnimatorState createState() => _StrokeOrderAnimatorState();
 }
 
-class _CharacterAnimatorState extends State<CharacterAnimator>
+class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator>
     with SingleTickerProviderStateMixin {
   AnimationController _controller;
   bool isAnimating = false;
