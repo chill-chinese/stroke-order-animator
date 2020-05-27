@@ -6,20 +6,8 @@ import 'package:stroke_order_animator/strokeOrderAnimationController.dart';
 
 class StrokeOrderAnimator extends StatefulWidget {
   final StrokeOrderAnimationController _controller;
-  final Color strokeColor;
-  final Color strokeOutlineColor;
-  final Color medianColor;
-  final bool showStroke;
-  final bool showOutline;
-  final bool showMedian;
 
-  StrokeOrderAnimator(this._controller,
-      {this.strokeColor: Colors.blue,
-      this.strokeOutlineColor: Colors.black,
-      this.medianColor: Colors.black,
-      this.showStroke: true,
-      this.showOutline: true,
-      this.showMedian: false});
+  StrokeOrderAnimator(this._controller);
 
   @override
   _StrokeOrderAnimatorState createState() => _StrokeOrderAnimatorState();
@@ -48,13 +36,14 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
                   height: 1024,
                   child: CustomPaint(
                       painter: StrokePainter(widget._controller.strokes[index],
-                          showStroke: widget.showStroke &&
+                          showStroke: widget._controller.showStroke &&
                               index < widget._controller.currentStroke,
-                          strokeColor: widget.strokeColor,
-                          showOutline: widget.showOutline && widget._controller.showOutline,
-                          outlineColor: widget.strokeOutlineColor,
-                          showMedian: widget.showMedian,
-                          medianColor: widget.medianColor,
+                          strokeColor: widget._controller.strokeColor,
+                          showOutline: widget._controller.showOutline &&
+                              widget._controller.showOutline,
+                          outlineColor: widget._controller.outlineColor,
+                          showMedian: widget._controller.showMedian,
+                          medianColor: widget._controller.medianColor,
                           animate: widget._controller.isAnimating &&
                               index == widget._controller.currentStroke,
                           animation: _animationController,

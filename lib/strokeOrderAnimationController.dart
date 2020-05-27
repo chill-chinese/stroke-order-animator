@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:svg_path_parser/svg_path_parser.dart';
@@ -21,12 +22,33 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   bool _isAnimating = false;
   bool get isAnimating => _isAnimating;
 
-  bool _showOutline = true;
-  bool get showOutline => _showOutline;
+  bool _showStroke;
+  bool _showOutline;
+  bool _showMedian;
 
-  StrokeOrderAnimationController(this._strokeOrder, this._tickerProvider,
-      {bool showOutline = true,
-      int animationSpeed = 1}) {
+  bool get showStroke => _showStroke;
+  bool get showOutline => _showOutline;
+  bool get showMedian => _showMedian;
+
+  Color _strokeColor;
+  Color _outlineColor;
+  Color _medianColor;
+
+  Color get strokeColor => _strokeColor;
+  Color get outlineColor => _outlineColor;
+  Color get medianColor => _medianColor;
+
+  StrokeOrderAnimationController(
+    this._strokeOrder,
+    this._tickerProvider, {
+    int animationSpeed = 1,
+    bool showStroke: true,
+    bool showOutline: true,
+    bool showMedian: false,
+    Color strokeColor: Colors.blue,
+    Color outlineColor: Colors.black,
+    Color medianColor: Colors.black,
+  }) {
     _animationController = AnimationController(
       vsync: _tickerProvider,
       duration: Duration(seconds: animationSpeed),
@@ -36,6 +58,13 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 
     setStrokeOrder(_strokeOrder);
     _showOutline = showOutline;
+
+    setShowStroke(showStroke);
+    setShowOutline(showOutline);
+    setShowMedian(showMedian);
+    setStrokeColor(strokeColor);
+    setOutlineColor(outlineColor);
+    setMedianColor(medianColor);
   }
 
   @override
@@ -125,8 +154,33 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setShowStroke(bool value) {
+    _showStroke = value;
+    notifyListeners();
+  }
+
   void setShowOutline(bool value) {
     _showOutline = value;
+    notifyListeners();
+  }
+
+  void setShowMedian(bool value) {
+    _showMedian = value;
+    notifyListeners();
+  }
+
+  void setStrokeColor(Color value) {
+    _strokeColor = value;
+    notifyListeners();
+  }
+
+  void setOutlineColor(Color value) {
+    _outlineColor = value;
+    notifyListeners();
+  }
+
+  void setMedianColor(Color value) {
+    _medianColor = value;
     notifyListeners();
   }
 

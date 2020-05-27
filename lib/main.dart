@@ -82,7 +82,6 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     _strokeOrderAnimationControllers.length,
                     (index) => StrokeOrderAnimator(
                       _strokeOrderAnimationControllers[index],
-                      strokeColor: Colors.blue,
                     ),
                   ),
                   onPageChanged: (index) {
@@ -132,7 +131,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 onPressed: () {
                   controller.setShowOutline(!controller.showOutline);
                 },
-                child: controller.showOutline ? Text("Hide outline") : Text("Show Outline"),
+                child: controller.showOutline
+                    ? Text("Hide outline")
+                    : Text("Show Outline"),
               ),
             ],
           );
