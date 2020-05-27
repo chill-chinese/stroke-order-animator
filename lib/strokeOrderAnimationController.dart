@@ -53,20 +53,46 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   }
 
   void startAnimation() {
-    if (currentStroke == nStrokes) {
-      currentStroke = 0;
+    if (!isAnimating) {
+      if (currentStroke == nStrokes) {
+        currentStroke = 0;
+      }
+      this.isAnimating = true;
+      animationController.forward();
+      notifyListeners();
     }
-    this.isAnimating = true;
-    animationController.forward();
-    notifyListeners();
   }
 
   void stopAnimation() {
     if (this.isAnimating) {
       currentStroke += 1;
+      this.isAnimating = false;
+      animationController.reset();
+      notifyListeners();
     }
-    this.isAnimating = false;
-    animationController.reset();
+  }
+
+  void nextStroke() {
+    if (currentStroke == nStrokes) {
+      currentStroke = 1;
+    }
+    else if (this.isAnimating) {
+      currentStroke += 1;
+      animationController.reset();
+
+      if (currentStroke < nStrokes) {
+        animationController.forward();
+      }
+      else {
+        isAnimating = false;
+      }
+    }
+    else {
+      if (currentStroke < nStrokes) {
+        currentStroke += 1;
+      }
+    }
+
     notifyListeners();
   }
 

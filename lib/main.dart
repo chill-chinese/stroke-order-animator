@@ -104,6 +104,12 @@ class _HomePageState extends State<HomePage>
                 },
                 child: controller.isAnimating ? Text("Stop animation") : Text("Start animation"),
               ),
+              MaterialButton(
+                onPressed: () {
+                  controller.nextStroke();
+                },
+                child: Text("Next"),
+              ),
             ],
           );
         }),
