@@ -5,28 +5,133 @@ import 'package:flutter/widgets.dart';
 import 'package:svg_path_parser/svg_path_parser.dart';
 
 class StrokeOrderAnimationController extends ChangeNotifier {
-  final String strokeOrder;
+  String _strokeOrder;
   final TickerProvider _tickerProvider;
-  int nStrokes;
-  int currentStroke = 0;
-  List<Path> strokes;
+
+  int _nStrokes;
+  int get nStrokes => _nStrokes;
+  int _currentStroke = 0;
+  int get currentStroke => _currentStroke;
+  List<Path> _strokes;
+  List<Path> get strokes => _strokes;
   List<List<List<int>>> medians;
 
-  AnimationController animationController;
-  bool isAnimating = false;
+  AnimationController _animationController;
+  AnimationController get animationController => _animationController;
+  bool _isAnimating = false;
+  bool get isAnimating => _isAnimating;
 
-  StrokeOrderAnimationController(this.strokeOrder, this._tickerProvider) {
-    animationController = AnimationController(
+  bool _showOutline;
+  bool get showOutline => _showOutline;
+
+  StrokeOrderAnimationController(this._strokeOrder, this._tickerProvider) {
+    _animationController = AnimationController(
       vsync: _tickerProvider,
       duration: Duration(seconds: 1),
     );
 
-    animationController.addStatusListener(_strokeCompleted);
+    _animationController.addStatusListener(_strokeCompleted);
 
-    final parsedJson = json.decode(strokeOrder.replaceAll("'", '"'));
+    setStrokeOrder(_strokeOrder);
+  }
+
+  @override
+  dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void startAnimation() {
+    if (!_isAnimating) {
+      if (_currentStroke == _nStrokes) {
+        _currentStroke = 0;
+      }
+      this._isAnimating = true;
+      _animationController.forward();
+      notifyListeners();
+    }
+  }
+
+  void stopAnimation() {
+    if (this._isAnimating) {
+      _currentStroke += 1;
+      this._isAnimating = false;
+      _animationController.reset();
+      notifyListeners();
+    }
+  }
+
+  void nextStroke() {
+    if (_currentStroke == _nStrokes) {
+      _currentStroke = 1;
+    } else if (this._isAnimating) {
+      _currentStroke += 1;
+      _animationController.reset();
+
+      if (_currentStroke < _nStrokes) {
+        _animationController.forward();
+      } else {
+        _isAnimating = false;
+      }
+    } else {
+      if (_currentStroke < _nStrokes) {
+        _currentStroke += 1;
+      }
+    }
+
+    notifyListeners();
+  }
+
+  void previousStroke() {
+    if (_currentStroke != 0) {
+      _currentStroke -= 1;
+    }
+
+    if (_isAnimating) {
+      _animationController.reset();
+      _animationController.forward();
+    }
+
+    notifyListeners();
+  }
+
+  void reset() {
+    _currentStroke = 0;
+    _isAnimating = false;
+    _animationController.reset();
+    notifyListeners();
+  }
+
+  void showFullCharacter() {
+    _currentStroke = _nStrokes;
+    _isAnimating = false;
+    _animationController.reset();
+    notifyListeners();
+  }
+
+  void _strokeCompleted(AnimationStatus status) {
+    if (status == AnimationStatus.completed) {
+      _currentStroke += 1;
+      _animationController.reset();
+      if (_currentStroke < _nStrokes) {
+        _animationController.forward();
+      } else {
+        _isAnimating = false;
+      }
+    }
+    notifyListeners();
+  }
+
+  void setShowOutline(bool value) {
+    _showOutline = value;
+    notifyListeners();
+  }
+
+  void setStrokeOrder(String strokeOrder) {
+    final parsedJson = json.decode(_strokeOrder.replaceAll("'", '"'));
 
     // Transformation according to the makemeahanzi documentation
-    strokes = List.generate(
+    _strokes = List.generate(
         parsedJson['strokes'].length,
         (index) => parseSvgPath(parsedJson['strokes'][index]).transform(
             Matrix4(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 900, 0, 1)
@@ -43,93 +148,6 @@ class StrokeOrderAnimationController extends ChangeNotifier {
       });
     });
 
-    nStrokes = strokes.length;
-  }
-
-  @override
-  dispose() {
-    animationController.dispose();
-    super.dispose();
-  }
-
-  void startAnimation() {
-    if (!isAnimating) {
-      if (currentStroke == nStrokes) {
-        currentStroke = 0;
-      }
-      this.isAnimating = true;
-      animationController.forward();
-      notifyListeners();
-    }
-  }
-
-  void stopAnimation() {
-    if (this.isAnimating) {
-      currentStroke += 1;
-      this.isAnimating = false;
-      animationController.reset();
-      notifyListeners();
-    }
-  }
-
-  void nextStroke() {
-    if (currentStroke == nStrokes) {
-      currentStroke = 1;
-    } else if (this.isAnimating) {
-      currentStroke += 1;
-      animationController.reset();
-
-      if (currentStroke < nStrokes) {
-        animationController.forward();
-      } else {
-        isAnimating = false;
-      }
-    } else {
-      if (currentStroke < nStrokes) {
-        currentStroke += 1;
-      }
-    }
-
-    notifyListeners();
-  }
-
-  void previousStroke() {
-    if (currentStroke != 0) {
-      currentStroke -= 1;
-    }
-
-    if (isAnimating) {
-      animationController.reset();
-      animationController.forward();
-    }
-
-    notifyListeners();
-  }
-
-  void reset() {
-    currentStroke = 0;
-    isAnimating = false;
-    animationController.reset();
-    notifyListeners();
-  }
-
-  void showFullCharacter() {
-    currentStroke = nStrokes;
-    isAnimating = false;
-    animationController.reset();
-    notifyListeners();
-  }
-
-  void _strokeCompleted(AnimationStatus status) {
-    if (status == AnimationStatus.completed) {
-      currentStroke += 1;
-      animationController.reset();
-      if (currentStroke < nStrokes) {
-        animationController.forward();
-      } else {
-        isAnimating = false;
-      }
-    }
-    notifyListeners();
+    _nStrokes = _strokes.length;
   }
 }
