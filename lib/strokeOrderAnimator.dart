@@ -38,48 +38,29 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
 
   @override
   Widget build(BuildContext context) {
-    var parsedJson =
-        json.decode(widget._controller.strokeOrder.replaceAll("'", '"'));
-
-    // Transformation according to the makemeahanzi documentation
-    final List<Path> strokes = List.generate(
-        parsedJson['strokes'].length,
-        (index) => parseSvgPath(parsedJson['strokes'][index]).transform(
-            Matrix4(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 900, 0, 1)
-                .storage));
-
-    final medians = List.generate(parsedJson['medians'].length, (iStroke) {
-      return List.generate(parsedJson['medians'][iStroke].length, (iPoint) {
-        return List<int>.generate(
-            parsedJson['medians'][iStroke][iPoint].length,
-            (iCoordinate) => iCoordinate == 0
-                ? parsedJson['medians'][iStroke][iPoint][iCoordinate]
-                : parsedJson['medians'][iStroke][iPoint][iCoordinate] * -1 +
-                    900);
-      });
-    });
-
     return Column(
       children: <Widget>[
         Stack(
           children: <Widget>[
             ...List.generate(
-              strokes.length,
+              widget._controller.strokes.length,
               (index) => FittedBox(
                 child: SizedBox(
                   width: 1024,
                   height: 1024,
                   child: CustomPaint(
-                      painter: StrokePainter(strokes[index],
-                          showStroke: widget.showStroke,
+                      painter: StrokePainter(widget._controller.strokes[index],
+                          showStroke: widget.showStroke &&
+                              index < widget._controller.currentStroke,
                           strokeColor: widget.strokeColor,
                           showOutline: widget.showOutline,
                           outlineColor: widget.strokeOutlineColor,
                           showMedian: widget.showMedian,
                           medianColor: widget.medianColor,
-                          animate: widget._controller.isAnimating,
+                          animate: widget._controller.isAnimating &&
+                              index == widget._controller.currentStroke,
                           animation: _animationController,
-                          median: medians[index])),
+                          median: widget._controller.medians[index])),
                 ),
               ),
             ),
@@ -129,39 +110,34 @@ class StrokePainter extends CustomPainter {
       strokeEnd = getClosestPointOnPath(strokeOutlinePath, median.last);
     }
 
-    if (showStroke) {
-      var strokePaint = Paint()
-        ..color = strokeColor
-        ..style = PaintingStyle.fill;
+    var strokePaint = Paint()
+      ..color = strokeColor
+      ..style = PaintingStyle.fill;
 
-      if (animate == true && animation != null && median[0].isNotEmpty) {
-        if (strokeStart.isNotEmpty && strokeEnd.isNotEmpty) {
-          // Split the original path into two paths that follow the outline
-          // of the stroke from strokeStart to strokeEnd clockwise and counter-clockwise
-          List<Path> contourPaths = extractContourPaths(
-              strokeOutlinePath, strokeStart.last, strokeEnd.last);
+    if (animate == true && animation != null && median[0].isNotEmpty) {
+      if (strokeStart.isNotEmpty && strokeEnd.isNotEmpty) {
+        // Split the original path into two paths that follow the outline
+        // of the stroke from strokeStart to strokeEnd clockwise and counter-clockwise
+        List<Path> contourPaths = extractContourPaths(
+            strokeOutlinePath, strokeStart.last, strokeEnd.last);
 
-          // Go on the first contourPath first, then jump over to the second path and go back to the start
-          final lenFirstPath = contourPaths.first.computeMetrics().first.length;
-          final lenSecondPath = contourPaths.last.computeMetrics().first.length;
+        // Go on the first contourPath first, then jump over to the second path and go back to the start
+        final lenFirstPath = contourPaths.first.computeMetrics().first.length;
+        final lenSecondPath = contourPaths.last.computeMetrics().first.length;
 
-          Path finalOutlinePath = contourPaths.first
-              .computeMetrics()
-              .first
-              .extractPath(0, animation.value * lenFirstPath);
-          finalOutlinePath.extendWithPath(
-              contourPaths.last.computeMetrics().first.extractPath(
-                  lenSecondPath - animation.value * lenSecondPath,
-                  lenSecondPath),
-              Offset(0, 0));
+        Path finalOutlinePath = contourPaths.first
+            .computeMetrics()
+            .first
+            .extractPath(0, animation.value * lenFirstPath);
+        finalOutlinePath.extendWithPath(
+            contourPaths.last.computeMetrics().first.extractPath(
+                lenSecondPath - animation.value * lenSecondPath, lenSecondPath),
+            Offset(0, 0));
 
-          canvas.drawPath(finalOutlinePath, strokePaint);
-        } else {
-          print("bsasd");
-        }
-      } else {
-        canvas.drawPath(strokeOutlinePath, strokePaint);
+        canvas.drawPath(finalOutlinePath, strokePaint);
       }
+    } else if (showStroke) {
+      canvas.drawPath(strokeOutlinePath, strokePaint);
     }
 
     if (showOutline) {
