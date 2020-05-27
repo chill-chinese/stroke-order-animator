@@ -3,56 +3,43 @@ import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:stroke_order_animator/strokeOrderAnimationController.dart';
 import 'package:svg_path_parser/svg_path_parser.dart';
 
 class StrokeOrderAnimator extends StatefulWidget {
-  final String strokeOrder;
+  final StrokeOrderAnimationController _controller;
+  final Color strokeColor;
+  final Color strokeOutlineColor;
+  final Color medianColor;
+  final bool showStroke;
+  final bool showOutline;
+  final bool showMedian;
 
-  StrokeOrderAnimator(this.strokeOrder);
+  StrokeOrderAnimator(this._controller,
+      {this.strokeColor: Colors.blue,
+      this.strokeOutlineColor: Colors.black,
+      this.medianColor: Colors.black,
+      this.showStroke: true,
+      this.showOutline: true,
+      this.showMedian: false});
 
   @override
   _StrokeOrderAnimatorState createState() => _StrokeOrderAnimatorState();
 }
 
-class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator>
-    with SingleTickerProviderStateMixin {
-  AnimationController _controller;
-  bool isAnimating = false;
+class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
+  static AnimationController _animationController;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: Duration(seconds: 3),
-      vsync: this,
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _startAnimation() {
-    setState(() {
-      isAnimating = true;
-      _controller.stop();
-      _controller.reset();
-      _controller.forward();
-    });
-  }
-
-  void _stopAnimation() {
-    setState(() {
-      _controller.stop();
-      isAnimating = false;
-    });
+    _animationController = widget._controller.animationController;
   }
 
   @override
   Widget build(BuildContext context) {
-    var parsedJson = json.decode(widget.strokeOrder.replaceAll("'", '"'));
+    var parsedJson =
+        json.decode(widget._controller.strokeOrder.replaceAll("'", '"'));
 
     // Transformation according to the makemeahanzi documentation
     final List<Path> strokes = List.generate(
@@ -74,7 +61,6 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator>
 
     return Column(
       children: <Widget>[
-        Text('Number of strokes: ' + strokes.length.toString()),
         Stack(
           children: <Widget>[
             ...List.generate(
@@ -85,34 +71,20 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator>
                   height: 1024,
                   child: CustomPaint(
                       painter: StrokePainter(strokes[index],
-                          showStroke: true,
-                          strokeColor: Colors.blue,
-                          showOutline: false,
-                          outlineColor: Colors.black,
-                          showMedian: false,
-                          medianColor: Colors.black,
-                          animate: isAnimating,
-                          animation: _controller,
+                          showStroke: widget.showStroke,
+                          strokeColor: widget.strokeColor,
+                          showOutline: widget.showOutline,
+                          outlineColor: widget.strokeOutlineColor,
+                          showMedian: widget.showMedian,
+                          medianColor: widget.medianColor,
+                          animate: widget._controller.isAnimating,
+                          animation: _animationController,
                           median: medians[index])),
                 ),
               ),
             ),
           ],
         ),
-        if (!isAnimating)
-          MaterialButton(
-            onPressed: () {
-              _startAnimation();
-            },
-            child: Text("Start animation"),
-          ),
-        if (isAnimating)
-          MaterialButton(
-            onPressed: () {
-              _stopAnimation();
-            },
-            child: Text("Stop animation"),
-          ),
       ],
     );
   }
@@ -158,10 +130,9 @@ class StrokePainter extends CustomPainter {
     }
 
     if (showStroke) {
-
       var strokePaint = Paint()
-      ..color = strokeColor
-      ..style = PaintingStyle.fill;
+        ..color = strokeColor
+        ..style = PaintingStyle.fill;
 
       if (animate == true && animation != null && median[0].isNotEmpty) {
         if (strokeStart.isNotEmpty && strokeEnd.isNotEmpty) {
@@ -174,8 +145,15 @@ class StrokePainter extends CustomPainter {
           final lenFirstPath = contourPaths.first.computeMetrics().first.length;
           final lenSecondPath = contourPaths.last.computeMetrics().first.length;
 
-          Path finalOutlinePath = contourPaths.first.computeMetrics().first.extractPath(0, animation.value*lenFirstPath);
-          finalOutlinePath.extendWithPath(contourPaths.last.computeMetrics().first.extractPath(lenSecondPath - animation.value*lenSecondPath, lenSecondPath), Offset(0, 0));
+          Path finalOutlinePath = contourPaths.first
+              .computeMetrics()
+              .first
+              .extractPath(0, animation.value * lenFirstPath);
+          finalOutlinePath.extendWithPath(
+              contourPaths.last.computeMetrics().first.extractPath(
+                  lenSecondPath - animation.value * lenSecondPath,
+                  lenSecondPath),
+              Offset(0, 0));
 
           canvas.drawPath(finalOutlinePath, strokePaint);
         } else {
@@ -222,7 +200,8 @@ List<Path> extractContourPaths(
   if (strokeEndLength > strokeStartLength) {
     path1 = metrics.extractPath(strokeStartLength, strokeEndLength);
     path2 = metrics.extractPath(strokeEndLength, metrics.length);
-    path2.extendWithPath(metrics.extractPath(0, strokeStartLength), Offset(0, 0));
+    path2.extendWithPath(
+        metrics.extractPath(0, strokeStartLength), Offset(0, 0));
   } else {
     path1 = metrics.extractPath(strokeStartLength, metrics.length);
     path1.extendWithPath(metrics.extractPath(0, strokeEndLength), Offset(0, 0));
