@@ -19,8 +19,7 @@ class HomePage extends StatefulWidget {
   _HomePageState createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage>
-    with TickerProviderStateMixin {
+class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   PageController _pageController;
   int _selectedIndex = 0;
 
@@ -97,18 +96,25 @@ class _HomePageState extends State<HomePage>
                 onPressed: () {
                   if (!controller.isAnimating) {
                     controller.startAnimation();
-                  }
-                  else {
+                  } else {
                     controller.stopAnimation();
                   }
                 },
-                child: controller.isAnimating ? Text("Stop animation") : Text("Start animation"),
+                child: controller.isAnimating
+                    ? Text("Stop animation")
+                    : Text("Start animation"),
               ),
               MaterialButton(
                 onPressed: () {
                   controller.nextStroke();
                 },
                 child: Text("Next"),
+              ),
+              MaterialButton(
+                onPressed: () {
+                  controller.previousStroke();
+                },
+                child: Text("Previous"),
               ),
             ],
           );

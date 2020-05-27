@@ -1,10 +1,8 @@
-import 'dart:convert';
 import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:stroke_order_animator/strokeOrderAnimationController.dart';
-import 'package:svg_path_parser/svg_path_parser.dart';
 
 class StrokeOrderAnimator extends StatefulWidget {
   final StrokeOrderAnimationController _controller;
