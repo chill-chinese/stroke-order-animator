@@ -21,18 +21,21 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   bool _isAnimating = false;
   bool get isAnimating => _isAnimating;
 
-  bool _showOutline;
+  bool _showOutline = true;
   bool get showOutline => _showOutline;
 
-  StrokeOrderAnimationController(this._strokeOrder, this._tickerProvider) {
+  StrokeOrderAnimationController(this._strokeOrder, this._tickerProvider,
+      {bool showOutline = true,
+      int animationSpeed = 1}) {
     _animationController = AnimationController(
       vsync: _tickerProvider,
-      duration: Duration(seconds: 1),
+      duration: Duration(seconds: animationSpeed),
     );
 
     _animationController.addStatusListener(_strokeCompleted);
 
     setStrokeOrder(_strokeOrder);
+    _showOutline = showOutline;
   }
 
   @override

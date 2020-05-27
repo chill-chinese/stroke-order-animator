@@ -128,6 +128,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 },
                 child: Text("Show full character"),
               ),
+              MaterialButton(
+                onPressed: () {
+                  controller.setShowOutline(!controller.showOutline);
+                },
+                child: controller.showOutline ? Text("Hide outline") : Text("Show Outline"),
+              ),
             ],
           );
         }),

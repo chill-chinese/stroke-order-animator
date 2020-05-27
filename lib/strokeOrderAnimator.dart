@@ -51,7 +51,7 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
                           showStroke: widget.showStroke &&
                               index < widget._controller.currentStroke,
                           strokeColor: widget.strokeColor,
-                          showOutline: widget.showOutline,
+                          showOutline: widget.showOutline && widget._controller.showOutline,
                           outlineColor: widget.strokeOutlineColor,
                           showMedian: widget.showMedian,
                           medianColor: widget.medianColor,
