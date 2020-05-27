@@ -106,6 +106,20 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void reset() {
+    currentStroke = 0;
+    isAnimating = false;
+    animationController.reset();
+    notifyListeners();
+  }
+
+  void showFullCharacter() {
+    currentStroke = nStrokes;
+    isAnimating = false;
+    animationController.reset();
+    notifyListeners();
+  }
+
   void _strokeCompleted(AnimationStatus status) {
     if (status == AnimationStatus.completed) {
       currentStroke += 1;

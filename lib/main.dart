@@ -116,6 +116,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 },
                 child: Text("Previous"),
               ),
+              MaterialButton(
+                onPressed: () {
+                  controller.reset();
+                },
+                child: Text("Reset"),
+              ),
+              MaterialButton(
+                onPressed: () {
+                  controller.showFullCharacter();
+                },
+                child: Text("Show full character"),
+              ),
             ],
           );
         }),
