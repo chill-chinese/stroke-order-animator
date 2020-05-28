@@ -1,6 +1,11 @@
+Version 1.2.0
+
+Created example project
+
+
 Version 1.1.0
 
-Implement radical highlighting
+Implemented radical highlighting
 
 
 Version 1.0.0

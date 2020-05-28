@@ -28,4 +28,11 @@ At the moment, the controller supports the following attributes and controls:
 * Show full character
 
 Please file an issue if something doesn't work as expected.
-Check out the example section for a full working example showing several stroke order diagrams in a swipeable page view.
+
+To run the example showing several stroke order diagrams in a swipeable page view:
+
+```
+git clone https://github.com/Mr-Pepe/stroke-order-animator
+cd stroke-order-animator/example/
+flutter run
+```
