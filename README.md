@@ -14,9 +14,11 @@ At the moment, the controller supports the following attributes and controls:
 * Show/hide strokes
 * Show/hide outlines
 * Show/hide medians
+* Highlight radicals
 * Stroke color
 * Outline color
 * Median color
+* Radical color
 
 ### Controls
 * Start/stop animation
