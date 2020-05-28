@@ -93,55 +93,80 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   },
                 ),
               ),
-              MaterialButton(
-                onPressed: () {
-                  if (!controller.isAnimating) {
-                    controller.startAnimation();
-                  } else {
-                    controller.stopAnimation();
-                  }
-                },
-                child: controller.isAnimating
-                    ? Text("Stop animation")
-                    : Text("Start animation"),
-              ),
-              MaterialButton(
-                onPressed: () {
-                  controller.nextStroke();
-                },
-                child: Text("Next"),
-              ),
-              MaterialButton(
-                onPressed: () {
-                  controller.previousStroke();
-                },
-                child: Text("Previous"),
-              ),
-              MaterialButton(
-                onPressed: () {
-                  controller.reset();
-                },
-                child: Text("Reset"),
-              ),
-              MaterialButton(
-                onPressed: () {
-                  controller.showFullCharacter();
-                },
-                child: Text("Show full character"),
-              ),
-              MaterialButton(
-                onPressed: () {
-                  controller.setShowOutline(!controller.showOutline);
-                },
-                child: controller.showOutline
-                    ? Text("Hide outline")
-                    : Text("Show Outline"),
-              ),
-              MaterialButton(
-                onPressed: () {
-                  controller.setShowOutline(!controller.showOutline);
-                },
-                child: Text("Toggle highlight radical"),
+              Flexible(
+                child: GridView(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    childAspectRatio: 3,
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 10,
+                  ),
+                  primary: false,
+                  children: <Widget>[
+                    MaterialButton(
+                      height: 20,
+                      onPressed: () {
+                        if (!controller.isAnimating) {
+                          controller.startAnimation();
+                        } else {
+                          controller.stopAnimation();
+                        }
+                      },
+                      child: controller.isAnimating
+                          ? Text("Stop animation")
+                          : Text("Start animation"),
+                    ),
+                    MaterialButton(
+                      height: 20,
+                      onPressed: () {
+                        controller.nextStroke();
+                      },
+                      child: Text("Next"),
+                    ),
+                    MaterialButton(
+                      onPressed: () {
+                        controller.previousStroke();
+                      },
+                      child: Text("Previous"),
+                    ),
+                    MaterialButton(
+                      onPressed: () {
+                        controller.reset();
+                      },
+                      child: Text("Reset"),
+                    ),
+                    MaterialButton(
+                      onPressed: () {
+                        controller.showFullCharacter();
+                      },
+                      child: Text("Show full character"),
+                    ),
+                    MaterialButton(
+                      onPressed: () {
+                        controller.setShowOutline(!controller.showOutline);
+                      },
+                      child: controller.showOutline
+                          ? Text("Hide outline")
+                          : Text("Show Outline"),
+                    ),
+                    MaterialButton(
+                      onPressed: () {
+                        controller.setShowMedian(!controller.showMedian);
+                      },
+                      child: controller.showMedian
+                          ? Text("Hide medians")
+                          : Text("Show medians"),
+                    ),
+                    MaterialButton(
+                      onPressed: () {
+                        controller
+                            .setHighlightRadical(!controller.highlightRadical);
+                      },
+                      child: controller.highlightRadical
+                          ? Text("Unhighlight radical")
+                          : Text("Highlight radical"),
+                    ),
+                  ],
+                ),
               ),
             ],
           );

@@ -8,6 +8,8 @@ import 'package:svg_path_parser/svg_path_parser.dart';
 class StrokeOrderAnimationController extends ChangeNotifier {
   String _strokeOrder;
   final TickerProvider _tickerProvider;
+  List<int> _radicalStrokes;
+  List<int> get radicalStrokes => _radicalStrokes;
 
   int _nStrokes;
   int get nStrokes => _nStrokes;
@@ -25,18 +27,22 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   bool _showStroke;
   bool _showOutline;
   bool _showMedian;
+  bool _highlightRadical;
 
   bool get showStroke => _showStroke;
   bool get showOutline => _showOutline;
   bool get showMedian => _showMedian;
+  bool get highlightRadical => _highlightRadical;
 
   Color _strokeColor;
   Color _outlineColor;
   Color _medianColor;
+  Color _radicalColor;
 
   Color get strokeColor => _strokeColor;
   Color get outlineColor => _outlineColor;
   Color get medianColor => _medianColor;
+  Color get radicalColor => _radicalColor;
 
   StrokeOrderAnimationController(
     this._strokeOrder,
@@ -45,9 +51,11 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     bool showStroke: true,
     bool showOutline: true,
     bool showMedian: false,
+    bool highlightRadical: false,
     Color strokeColor: Colors.blue,
     Color outlineColor: Colors.black,
     Color medianColor: Colors.black,
+    Color radicalColor: Colors.red,
   }) {
     _animationController = AnimationController(
       vsync: _tickerProvider,
@@ -62,9 +70,11 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     setShowStroke(showStroke);
     setShowOutline(showOutline);
     setShowMedian(showMedian);
+    setHighlightRadical(highlightRadical);
     setStrokeColor(strokeColor);
     setOutlineColor(outlineColor);
     setMedianColor(medianColor);
+    setRadicalColor(radicalColor);
   }
 
   @override
@@ -169,6 +179,11 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setHighlightRadical(bool value) {
+    _highlightRadical = value;
+    notifyListeners();
+  }
+
   void setStrokeColor(Color value) {
     _strokeColor = value;
     notifyListeners();
@@ -181,6 +196,11 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 
   void setMedianColor(Color value) {
     _medianColor = value;
+    notifyListeners();
+  }
+
+  void setRadicalColor(Color value) {
+    _radicalColor = value;
     notifyListeners();
   }
 
@@ -203,8 +223,15 @@ class StrokeOrderAnimationController extends ChangeNotifier {
                 : parsedJson['medians'][iStroke][iPoint][iCoordinate] * -1 +
                     900);
       });
+
     });
 
+    if (parsedJson['radStrokes'] != null) {
+      _radicalStrokes = List<int>.generate(parsedJson['radStrokes'].length, (index) => parsedJson['radStrokes'][index]);
+    }
+    else {
+      _radicalStrokes = [];
+    }
     _nStrokes = _strokes.length;
   }
 }
