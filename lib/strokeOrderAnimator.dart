@@ -30,25 +30,29 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
           children: <Widget>[
             ...List.generate(
               widget._controller.strokes.length,
-              (index) => FittedBox(
-                child: SizedBox(
-                  width: 1024,
-                  height: 1024,
-                  child: CustomPaint(
-                      painter: StrokePainter(widget._controller.strokes[index],
-                          showStroke: widget._controller.showStroke &&
-                              index < widget._controller.currentStroke,
-                          strokeColor: widget._controller.strokeColor,
-                          showOutline: widget._controller.showOutline &&
-                              widget._controller.showOutline,
-                          outlineColor: widget._controller.outlineColor,
-                          showMedian: widget._controller.showMedian,
-                          medianColor: widget._controller.medianColor,
-                          animate: widget._controller.isAnimating &&
-                              index == widget._controller.currentStroke,
-                          animation: _animationController,
-                          median: widget._controller.medians[index])),
-                ),
+              (index) => SizedBox(
+                width: 1024,
+                height: 1024,
+                child: CustomPaint(
+                    painter: StrokePainter(widget._controller.strokes[index],
+                        showStroke: widget._controller.showStroke &&
+                            index < widget._controller.currentStroke,
+                        // Use radical color if radical should be highlighted
+                        // Regular stroke color otherwise
+                        strokeColor: widget._controller.highlightRadical &&
+                                widget._controller.radicalStrokes
+                                    .contains(index)
+                            ? widget._controller.radicalColor
+                            : widget._controller.strokeColor,
+                        showOutline: widget._controller.showOutline &&
+                            widget._controller.showOutline,
+                        outlineColor: widget._controller.outlineColor,
+                        showMedian: widget._controller.showMedian,
+                        medianColor: widget._controller.medianColor,
+                        animate: widget._controller.isAnimating &&
+                            index == widget._controller.currentStroke,
+                        animation: _animationController,
+                        median: widget._controller.medians[index])),
               ),
             ),
           ],
@@ -130,7 +134,7 @@ class StrokePainter extends CustomPainter {
     if (showOutline) {
       var borderPaint = Paint()
         ..color = outlineColor
-        ..strokeWidth = 1.0
+        ..strokeWidth = 2.0
         ..style = PaintingStyle.stroke;
       canvas.drawPath(strokeOutlinePath, borderPaint);
     }
@@ -145,6 +149,7 @@ class StrokePainter extends CustomPainter {
           medianPath,
           Paint()
             ..style = PaintingStyle.stroke
+            ..strokeWidth = 2.0
             ..color = medianColor);
     }
   }

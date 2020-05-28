@@ -74,14 +74,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             builder: (context, controller, child) {
           return Column(
             children: <Widget>[
-              Flexible(
+              Expanded(
                 child: PageView(
                   controller: _pageController,
                   scrollDirection: Axis.horizontal,
                   children: List.generate(
                     _strokeOrderAnimationControllers.length,
-                    (index) => StrokeOrderAnimator(
-                      _strokeOrderAnimationControllers[index],
+                    (index) => FittedBox(
+                      child: StrokeOrderAnimator(
+                        _strokeOrderAnimationControllers[index],
+                      ),
                     ),
                   ),
                   onPageChanged: (index) {
@@ -134,6 +136,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 child: controller.showOutline
                     ? Text("Hide outline")
                     : Text("Show Outline"),
+              ),
+              MaterialButton(
+                onPressed: () {
+                  controller.setShowOutline(!controller.showOutline);
+                },
+                child: Text("Toggle highlight radical"),
               ),
             ],
           );
