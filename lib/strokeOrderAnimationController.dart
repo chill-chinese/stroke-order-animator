@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
+import 'package:stroke_order_animator/strokeOrderAnimator.dart';
 import 'package:svg_path_parser/svg_path_parser.dart';
 
 class StrokeOrderAnimationController extends ChangeNotifier {
@@ -262,51 +263,89 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   }
 
   void checkStroke(List<Offset> rawPoints) {
-    print(rawPoints);
-
     bool strokeIsCorrect = false;
 
-    List<Offset> points = [];
-    for (var point in rawPoints) {
-      if (point != null) {
-        points.add(point);
+    if (currentStroke < nStrokes) {
+      List<Offset> points = [];
+      for (var point in rawPoints) {
+        if (point != null) {
+          points.add(point);
+        }
       }
-    }
-    final currentMedian = medians[currentStroke];
 
-    final medianPath = Path();
-    if (currentMedian.length > 1) {
-      medianPath.moveTo(
-          currentMedian[0][0].toDouble(), currentMedian[0][1].toDouble());
-      for (var point in currentMedian) {
-        medianPath.lineTo(point[0].toDouble(), point[1].toDouble());
+      final currentMedian = medians[currentStroke];
+
+      final medianPath = Path();
+      if (currentMedian.length > 1) {
+        medianPath.moveTo(
+            currentMedian[0][0].toDouble(), currentMedian[0][1].toDouble());
+        for (var point in currentMedian) {
+          medianPath.lineTo(point[0].toDouble(), point[1].toDouble());
+        }
       }
-    }
 
-    final strokePath = Path();
-    if (points.length > 1) {
-      strokePath.moveTo(points[0].dx, points[0].dy);
-      for (var point in points) {
-        strokePath.lineTo(point.dx, point.dy);
+      final strokePath = Path();
+      if (points.length > 1) {
+        strokePath.moveTo(points[0].dx, points[0].dy);
+        for (var point in points) {
+          strokePath.lineTo(point.dx, point.dy);
+        }
       }
-    }
 
-    final medianBounds = medianPath.getBounds();
-    final strokeBounds = strokePath.getBounds();
+      final medianLength = medianPath.computeMetrics().first.length;
+      final strokeLength = strokePath.computeMetrics().first.length;
 
-    final medianLength = medianPath.computeMetrics().first.length;
-    final strokeLength = strokePath.computeMetrics().first.length;
+      // Check whether the drawn stroke is correct
+      double startEndMargin = 150;
+      List<double> lengthRange = [0.5, 1.5];
 
-    if (strokeLength > 0.5 * medianLength &&
-        strokeLength < 1.5 * medianLength) {
-      strokeIsCorrect = true;
-    }
+      // Be more lenient on short strokes
+      if (medianLength < 150) {
+        lengthRange = [0.2, 3];
+        startEndMargin = 200;
+      }
 
-    if (_isQuizzing && currentStroke < nStrokes) {
-      if (strokeIsCorrect) {
-        _currentStroke += 1;
+      if ( // Check length of stroke
+          strokeLength > lengthRange[0] * medianLength &&
+              strokeLength < lengthRange[1] * medianLength &&
+              // Check start and end position of stroke
+              points.first.dx > currentMedian.first[0] - startEndMargin &&
+              points.first.dx < currentMedian.first[0] + startEndMargin &&
+              points.first.dy > currentMedian.first[1] - startEndMargin &&
+              points.first.dy < currentMedian.first[1] + startEndMargin &&
+              points.last.dx > currentMedian.last[0] - startEndMargin &&
+              points.last.dx < currentMedian.last[0] + startEndMargin &&
+              points.last.dy > currentMedian.last[1] - startEndMargin &&
+              points.last.dy < currentMedian.last[1] + startEndMargin &&
+              // Check that the stroke has the right direction
+              ((distance2D(
+                          [points.first.dx, points.first.dy],
+                          currentMedian.first
+                              .map((e) => e.toDouble())
+                              .toList()) <
+                      distance2D(
+                          [points.last.dx, points.last.dy],
+                          currentMedian.first
+                              .map((e) => e.toDouble())
+                              .toList())) ||
+                  (distance2D([
+                        points.last.dx,
+                        points.last.dy
+                      ], currentMedian.last.map((e) => e.toDouble()).toList()) <
+                      distance2D(
+                          [points.first.dx, points.first.dy],
+                          currentMedian.last
+                              .map((e) => e.toDouble())
+                              .toList())))) {
+        strokeIsCorrect = true;
+      }
 
-        notifyListeners();
+      if (_isQuizzing && currentStroke < nStrokes) {
+        if (strokeIsCorrect) {
+          _currentStroke += 1;
+
+          notifyListeners();
+        }
       }
     }
   }
