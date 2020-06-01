@@ -260,4 +260,54 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     }
     _nStrokes = _strokes.length;
   }
+
+  void checkStroke(List<Offset> rawPoints) {
+    print(rawPoints);
+
+    bool strokeIsCorrect = false;
+
+    List<Offset> points = [];
+    for (var point in rawPoints) {
+      if (point != null) {
+        points.add(point);
+      }
+    }
+    final currentMedian = medians[currentStroke];
+
+    final medianPath = Path();
+    if (currentMedian.length > 1) {
+      medianPath.moveTo(
+          currentMedian[0][0].toDouble(), currentMedian[0][1].toDouble());
+      for (var point in currentMedian) {
+        medianPath.lineTo(point[0].toDouble(), point[1].toDouble());
+      }
+    }
+
+    final strokePath = Path();
+    if (points.length > 1) {
+      strokePath.moveTo(points[0].dx, points[0].dy);
+      for (var point in points) {
+        strokePath.lineTo(point.dx, point.dy);
+      }
+    }
+
+    final medianBounds = medianPath.getBounds();
+    final strokeBounds = strokePath.getBounds();
+
+    final medianLength = medianPath.computeMetrics().first.length;
+    final strokeLength = strokePath.computeMetrics().first.length;
+
+    if (strokeLength > 0.5 * medianLength &&
+        strokeLength < 1.5 * medianLength) {
+      strokeIsCorrect = true;
+    }
+
+    if (_isQuizzing && currentStroke < nStrokes) {
+      if (strokeIsCorrect) {
+        _currentStroke += 1;
+
+        notifyListeners();
+      }
+    }
+  }
 }

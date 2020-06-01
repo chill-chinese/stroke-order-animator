@@ -31,12 +31,21 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
         setState(() {
           RenderBox box = context.findRenderObject();
           Offset point = box.globalToLocal(details.globalPosition);
-          point = point.translate(0.0, -(AppBar().preferredSize.height));
 
-          points = List.from(points)..add(point);
+          if (point.dx >= 0 &&
+              point.dx <= box.size.width &&
+              point.dy >= 0 &&
+              point.dy <= box.size.height) {
+            points = List.from(points)..add(point);
+          } else {
+            if (points.last != null) {
+              points = List.from(points)..add(null);
+            }
+          }
         });
       },
       onPanEnd: (DragEndDetails details) {
+        widget._controller.checkStroke(points);
         setState(() {
           points.clear();
         });
@@ -67,14 +76,12 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
                       median: widget._controller.medians[index])),
             ),
           ),
-          Container(
-            margin: EdgeInsets.all(1.0),
-            alignment: Alignment.topLeft,
-            color: Colors.blueGrey[50],
-            child: CustomPaint(
-              painter: Brush(points),
+          if (widget._controller.isQuizzing)
+            Container(
+              child: CustomPaint(
+                painter: Brush(points),
+              ),
             ),
-          ),
         ],
       ),
     );
