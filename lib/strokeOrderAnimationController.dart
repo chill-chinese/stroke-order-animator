@@ -23,6 +23,8 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   AnimationController get animationController => _animationController;
   bool _isAnimating = false;
   bool get isAnimating => _isAnimating;
+  bool _isQuizzing = false;
+  bool get isQuizzing => _isQuizzing;
 
   bool _showStroke;
   bool _showOutline;
@@ -84,57 +86,80 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   }
 
   void startAnimation() {
-    if (!_isAnimating) {
+    if (!_isAnimating && !_isQuizzing) {
       if (_currentStroke == _nStrokes) {
         _currentStroke = 0;
       }
-      this._isAnimating = true;
+      _isAnimating = true;
       _animationController.forward();
       notifyListeners();
     }
   }
 
   void stopAnimation() {
-    if (this._isAnimating) {
+    if (_isAnimating) {
       _currentStroke += 1;
-      this._isAnimating = false;
+      _isAnimating = false;
       _animationController.reset();
       notifyListeners();
     }
   }
 
-  void nextStroke() {
-    if (_currentStroke == _nStrokes) {
-      _currentStroke = 1;
-    } else if (this._isAnimating) {
-      _currentStroke += 1;
+  void startQuiz() {
+    if (!_isQuizzing) {
+      _isAnimating = false;
+      _currentStroke = 0;
       _animationController.reset();
-
-      if (_currentStroke < _nStrokes) {
-        _animationController.forward();
-      } else {
-        _isAnimating = false;
-      }
-    } else {
-      if (_currentStroke < _nStrokes) {
-        _currentStroke += 1;
-      }
+      _isQuizzing = true;
+      notifyListeners();
     }
+  }
 
-    notifyListeners();
+  void stopQuiz() {
+    if (_isQuizzing) {
+      _isAnimating = false;
+      _animationController.reset();
+      _isQuizzing = false;
+      notifyListeners();
+    }
+  }
+
+  void nextStroke() {
+    if (!_isQuizzing) {
+      if (_currentStroke == _nStrokes) {
+        _currentStroke = 1;
+      } else if (_isAnimating) {
+        _currentStroke += 1;
+        _animationController.reset();
+
+        if (_currentStroke < _nStrokes) {
+          _animationController.forward();
+        } else {
+          _isAnimating = false;
+        }
+      } else {
+        if (_currentStroke < _nStrokes) {
+          _currentStroke += 1;
+        }
+      }
+
+      notifyListeners();
+    }
   }
 
   void previousStroke() {
-    if (_currentStroke != 0) {
-      _currentStroke -= 1;
-    }
+    if (!_isQuizzing) {
+      if (_currentStroke != 0) {
+        _currentStroke -= 1;
+      }
 
-    if (_isAnimating) {
-      _animationController.reset();
-      _animationController.forward();
-    }
+      if (_isAnimating) {
+        _animationController.reset();
+        _animationController.forward();
+      }
 
-    notifyListeners();
+      notifyListeners();
+    }
   }
 
   void reset() {
@@ -145,10 +170,12 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   }
 
   void showFullCharacter() {
-    _currentStroke = _nStrokes;
-    _isAnimating = false;
-    _animationController.reset();
-    notifyListeners();
+    if (!_isQuizzing) {
+      _currentStroke = _nStrokes;
+      _isAnimating = false;
+      _animationController.reset();
+      notifyListeners();
+    }
   }
 
   void _strokeCompleted(AnimationStatus status) {
@@ -223,13 +250,12 @@ class StrokeOrderAnimationController extends ChangeNotifier {
                 : parsedJson['medians'][iStroke][iPoint][iCoordinate] * -1 +
                     900);
       });
-
     });
 
     if (parsedJson['radStrokes'] != null) {
-      _radicalStrokes = List<int>.generate(parsedJson['radStrokes'].length, (index) => parsedJson['radStrokes'][index]);
-    }
-    else {
+      _radicalStrokes = List<int>.generate(parsedJson['radStrokes'].length,
+          (index) => parsedJson['radStrokes'][index]);
+    } else {
       _radicalStrokes = [];
     }
     _nStrokes = _strokes.length;

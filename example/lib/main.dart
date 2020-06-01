@@ -103,29 +103,33 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   primary: false,
                   children: <Widget>[
                     MaterialButton(
-                      height: 20,
-                      onPressed: () {
-                        if (!controller.isAnimating) {
-                          controller.startAnimation();
-                        } else {
-                          controller.stopAnimation();
-                        }
-                      },
+                      onPressed: !controller.isQuizzing
+                          ? () {
+                              if (!controller.isAnimating) {
+                                controller.startAnimation();
+                              } else {
+                                controller.stopAnimation();
+                              }
+                            }
+                          : null,
                       child: controller.isAnimating
                           ? Text("Stop animation")
                           : Text("Start animation"),
                     ),
                     MaterialButton(
-                      height: 20,
-                      onPressed: () {
-                        controller.nextStroke();
-                      },
+                      onPressed: !controller.isQuizzing
+                          ? () {
+                              controller.nextStroke();
+                            }
+                          : null,
                       child: Text("Next"),
                     ),
                     MaterialButton(
-                      onPressed: () {
-                        controller.previousStroke();
-                      },
+                      onPressed: !controller.isQuizzing
+                          ? () {
+                              controller.previousStroke();
+                            }
+                          : null,
                       child: Text("Previous"),
                     ),
                     MaterialButton(
@@ -135,9 +139,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       child: Text("Reset"),
                     ),
                     MaterialButton(
-                      onPressed: () {
-                        controller.showFullCharacter();
-                      },
+                      onPressed: !controller.isQuizzing
+                          ? () {
+                              controller.showFullCharacter();
+                            }
+                          : null,
                       child: Text("Show full character"),
                     ),
                     MaterialButton(
@@ -164,6 +170,18 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       child: controller.highlightRadical
                           ? Text("Unhighlight radical")
                           : Text("Highlight radical"),
+                    ),
+                    MaterialButton(
+                      onPressed: () {
+                        if (!controller.isQuizzing) {
+                          controller.startQuiz();
+                        } else {
+                          controller.stopQuiz();
+                        }
+                      },
+                      child: controller.isQuizzing
+                          ? Text("Stop quiz")
+                          : Text("Start quiz"),
                     ),
                   ],
                 ),
