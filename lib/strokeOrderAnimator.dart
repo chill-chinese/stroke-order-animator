@@ -16,6 +16,8 @@ class StrokeOrderAnimator extends StatefulWidget {
 class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
   static AnimationController _animationController;
 
+  List<Offset> points = <Offset>[];
+
   @override
   void initState() {
     super.initState();
@@ -24,40 +26,57 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        Stack(
-          children: <Widget>[
-            ...List.generate(
-              widget._controller.strokes.length,
-              (index) => SizedBox(
-                width: 1024,
-                height: 1024,
-                child: CustomPaint(
-                    painter: StrokePainter(widget._controller.strokes[index],
-                        showStroke: widget._controller.showStroke &&
-                            index < widget._controller.currentStroke,
-                        // Use radical color if radical should be highlighted
-                        // Regular stroke color otherwise
-                        strokeColor: widget._controller.highlightRadical &&
-                                widget._controller.radicalStrokes
-                                    .contains(index)
-                            ? widget._controller.radicalColor
-                            : widget._controller.strokeColor,
-                        showOutline: widget._controller.showOutline &&
-                            widget._controller.showOutline,
-                        outlineColor: widget._controller.outlineColor,
-                        showMedian: widget._controller.showMedian,
-                        medianColor: widget._controller.medianColor,
-                        animate: widget._controller.isAnimating &&
-                            index == widget._controller.currentStroke,
-                        animation: _animationController,
-                        median: widget._controller.medians[index])),
-              ),
+    return GestureDetector(
+      onPanUpdate: (DragUpdateDetails details) {
+        setState(() {
+          RenderBox box = context.findRenderObject();
+          Offset point = box.globalToLocal(details.globalPosition);
+          point = point.translate(0.0, -(AppBar().preferredSize.height));
+
+          points = List.from(points)..add(point);
+        });
+      },
+      onPanEnd: (DragEndDetails details) {
+        setState(() {
+          points.clear();
+        });
+      },
+      child: Stack(
+        children: <Widget>[
+          ...List.generate(
+            widget._controller.strokes.length,
+            (index) => SizedBox(
+              width: 1024,
+              height: 1024,
+              child: CustomPaint(
+                  painter: StrokePainter(widget._controller.strokes[index],
+                      showStroke: widget._controller.showStroke &&
+                          index < widget._controller.currentStroke,
+                      strokeColor: widget._controller.highlightRadical &&
+                              widget._controller.radicalStrokes.contains(index)
+                          ? widget._controller.radicalColor
+                          : widget._controller.strokeColor,
+                      showOutline: widget._controller.showOutline &&
+                          widget._controller.showOutline,
+                      outlineColor: widget._controller.outlineColor,
+                      showMedian: widget._controller.showMedian,
+                      medianColor: widget._controller.medianColor,
+                      animate: widget._controller.isAnimating &&
+                          index == widget._controller.currentStroke,
+                      animation: _animationController,
+                      median: widget._controller.medians[index])),
             ),
-          ],
-        ),
-      ],
+          ),
+          Container(
+            margin: EdgeInsets.all(1.0),
+            alignment: Alignment.topLeft,
+            color: Colors.blueGrey[50],
+            child: CustomPaint(
+              painter: Brush(points),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -216,4 +235,28 @@ List<double> getClosestPointOnPath(Path path, List<int> queryPoint) {
 
 double distance2D(List<double> p, List<double> q) {
   return sqrt(pow(p[0] - q[0], 2) + pow(p[1] - q[1], 2));
+}
+
+class Brush extends CustomPainter {
+  final List<Offset> points;
+
+  Brush(this.points);
+
+  @override
+  bool shouldRepaint(Brush oldDelegate) {
+    return oldDelegate.points != points;
+  }
+
+  void paint(Canvas canvas, Size size) {
+    Paint paint = Paint()
+      ..color = Colors.black
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 8.0;
+
+    for (int i = 0; i < points.length - 1; i++) {
+      if (points[i] != null && points[i + 1] != null) {
+        canvas.drawLine(points[i], points[i + 1], paint);
+      }
+    }
+  }
 }
