@@ -425,6 +425,10 @@ class StrokeOrderAnimationController extends ChangeNotifier {
         if (strokeIsCorrect) {
           _setCurrentStroke(currentStroke + 1);
 
+          if (currentStroke == nStrokes) {
+            stopQuiz();
+          }
+
           notifyListeners();
         } else {
           _badTriesThisStroke += 1;
