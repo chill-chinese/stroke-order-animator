@@ -29,6 +29,8 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   bool get isAnimating => _isAnimating;
   bool _isQuizzing = false;
   bool get isQuizzing => _isQuizzing;
+  double _strokeAnimationSpeed = 1;
+  double _hintAnimationSpeed = 3;
 
   bool _showStroke;
   bool _showOutline;
@@ -64,7 +66,8 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   StrokeOrderAnimationController(
     this._strokeOrder,
     this._tickerProvider, {
-    int animationSpeed: 1,
+    double strokeAnimationSpeed: 1,
+    double hintAnimationSpeed: 3,
     bool showStroke: true,
     bool showOutline: true,
     bool showMedian: false,
@@ -80,14 +83,12 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   }) {
     _strokeAnimationController = AnimationController(
       vsync: _tickerProvider,
-      duration: Duration(seconds: animationSpeed),
     );
 
     _strokeAnimationController.addStatusListener(_strokeCompleted);
 
     _hintAnimationController = AnimationController(
       vsync: _tickerProvider,
-      duration: Duration(milliseconds: 300),
     );
 
     _hintAnimationController.addStatusListener((status) {
@@ -97,8 +98,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     });
 
     setStrokeOrder(_strokeOrder);
-    _showOutline = showOutline;
-
+    _setCurrentStroke(0);
     setShowStroke(showStroke);
     setShowOutline(showOutline);
     setShowMedian(showMedian);
@@ -111,6 +111,8 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     setBrushWidth(brushWidth);
     setHintAfterStrokes(hintAfterStrokes);
     setHintColor(hintColor);
+    setStrokeAnimationSpeed(strokeAnimationSpeed);
+    setHintAnimationSpeed(hintAnimationSpeed);
   }
 
   @override
@@ -286,6 +288,26 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setStrokeAnimationSpeed(double value) {
+    _strokeAnimationSpeed = value;
+    _setCurrentStroke(currentStroke);
+  }
+
+  void setHintAnimationSpeed(double value) {
+    _hintAnimationSpeed = value;
+    _setCurrentStroke(currentStroke);
+  }
+
+  void _setNormalizedStrokeAnimationSpeed(double normFactor) {
+    _strokeAnimationController.duration =
+        Duration(milliseconds: (normFactor / _strokeAnimationSpeed * 1000).toInt());
+  }
+
+  void _setNormalizedHintAnimationSpeed(double normFactor) {
+    _hintAnimationController.duration =
+        Duration(milliseconds: (normFactor / _hintAnimationSpeed * 1000).toInt());
+  }
+
   void setStrokeOrder(String strokeOrder) {
     final parsedJson = json.decode(_strokeOrder.replaceAll("'", '"'));
 
@@ -413,6 +435,30 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   void _setCurrentStroke(int value) {
     _currentStroke = value;
     _badTriesThisStroke = 0;
+
+    // Normalize the animation speed to the length of the stroke
+    // The first stroke of 你 (length 520) is taken as reference
+    if (currentStroke < nStrokes) {
+      final currentMedian = medians[currentStroke];
+
+      final medianPath = Path();
+      if (currentMedian.length > 1) {
+        medianPath.moveTo(
+            currentMedian[0][0].toDouble(), currentMedian[0][1].toDouble());
+        for (var point in currentMedian) {
+          medianPath.lineTo(point[0].toDouble(), point[1].toDouble());
+        }
+      }
+
+      final medianLength = medianPath.computeMetrics().first.length;
+
+      if (medianLength > 0) {
+        final normFactor = (medianLength/520).clamp(0.5, 1.5);
+        _setNormalizedStrokeAnimationSpeed(normFactor);
+        _setNormalizedHintAnimationSpeed(normFactor);
+      }
+    }
+
     notifyListeners();
   }
 }
