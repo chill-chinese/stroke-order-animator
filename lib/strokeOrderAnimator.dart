@@ -14,14 +14,16 @@ class StrokeOrderAnimator extends StatefulWidget {
 }
 
 class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
-  static AnimationController _animationController;
+  static AnimationController _strokeAnimationController;
+  static AnimationController _hintAnimationController;
 
   List<Offset> points = <Offset>[];
 
   @override
   void initState() {
     super.initState();
-    _animationController = widget._controller.animationController;
+    _strokeAnimationController = widget._controller.strokeAnimationController;
+    _hintAnimationController = widget._controller.hintAnimationController;
   }
 
   @override
@@ -52,30 +54,44 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
       },
       child: Stack(
         children: <Widget>[
-          ...List.generate(
-            widget._controller.strokes.length,
-            (index) => SizedBox(
+          ...List.generate(widget._controller.strokes.length, (index) {
+            // Determine whether to use standard stroke color, radical color or hint color
+            Color strokeColor = widget._controller.strokeColor;
+
+            if (widget._controller.highlightRadical &&
+                widget._controller.radicalStrokes.contains(index)) {
+              strokeColor = widget._controller.radicalColor;
+            }
+
+            if (widget._controller.isQuizzing &&
+                index == widget._controller.currentStroke) {
+              strokeColor = widget._controller.hintColor;
+            }
+
+            final animate = index == widget._controller.currentStroke &&
+                (widget._controller.isAnimating ||
+                    widget._controller.isQuizzing);
+            final animationController = widget._controller.isQuizzing
+                ? _hintAnimationController
+                : _strokeAnimationController;
+
+            return SizedBox(
               width: 1024,
               height: 1024,
               child: CustomPaint(
                   painter: StrokePainter(widget._controller.strokes[index],
                       showStroke: widget._controller.showStroke &&
                           index < widget._controller.currentStroke,
-                      strokeColor: widget._controller.highlightRadical &&
-                              widget._controller.radicalStrokes.contains(index)
-                          ? widget._controller.radicalColor
-                          : widget._controller.strokeColor,
-                      showOutline: widget._controller.showOutline &&
-                          widget._controller.showOutline,
+                      strokeColor: strokeColor,
+                      showOutline: widget._controller.showOutline,
                       outlineColor: widget._controller.outlineColor,
                       showMedian: widget._controller.showMedian,
                       medianColor: widget._controller.medianColor,
-                      animate: widget._controller.isAnimating &&
-                          index == widget._controller.currentStroke,
-                      animation: _animationController,
+                      animate: animate,
+                      animation: animationController,
                       median: widget._controller.medians[index])),
-            ),
-          ),
+            );
+          }),
           if (widget._controller.isQuizzing)
             Container(
               child: CustomPaint(

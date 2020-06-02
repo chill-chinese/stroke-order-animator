@@ -20,8 +20,11 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   List<Path> get strokes => _strokes;
   List<List<List<int>>> medians;
 
-  AnimationController _animationController;
-  AnimationController get animationController => _animationController;
+  AnimationController _strokeAnimationController;
+  AnimationController get strokeAnimationController =>
+      _strokeAnimationController;
+  AnimationController _hintAnimationController;
+  AnimationController get hintAnimationController => _hintAnimationController;
   bool _isAnimating = false;
   bool get isAnimating => _isAnimating;
   bool _isQuizzing = false;
@@ -42,20 +45,26 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   Color _medianColor;
   Color _radicalColor;
   Color _brushColor;
+  Color _hintColor;
 
   Color get strokeColor => _strokeColor;
   Color get outlineColor => _outlineColor;
   Color get medianColor => _medianColor;
   Color get radicalColor => _radicalColor;
   Color get brushColor => _brushColor;
+  Color get hintColor => _hintColor;
 
   double _brushWidth;
   double get brushWidth => _brushWidth;
 
+  int _badTriesThisStroke = 0;
+  int _hintAfterStrokes;
+  int get hintAfterStrokes => _hintAfterStrokes;
+
   StrokeOrderAnimationController(
     this._strokeOrder,
     this._tickerProvider, {
-    int animationSpeed = 1,
+    int animationSpeed: 1,
     bool showStroke: true,
     bool showOutline: true,
     bool showMedian: false,
@@ -66,13 +75,26 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     Color radicalColor: Colors.red,
     Color brushColor: Colors.black,
     double brushWidth: 8.0,
+    int hintAfterStrokes: 3,
+    Color hintColor: Colors.lightBlueAccent,
   }) {
-    _animationController = AnimationController(
+    _strokeAnimationController = AnimationController(
       vsync: _tickerProvider,
       duration: Duration(seconds: animationSpeed),
     );
 
-    _animationController.addStatusListener(_strokeCompleted);
+    _strokeAnimationController.addStatusListener(_strokeCompleted);
+
+    _hintAnimationController = AnimationController(
+      vsync: _tickerProvider,
+      duration: Duration(milliseconds: 300),
+    );
+
+    _hintAnimationController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _hintAnimationController.reset();
+      }
+    });
 
     setStrokeOrder(_strokeOrder);
     _showOutline = showOutline;
@@ -87,30 +109,33 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     setRadicalColor(radicalColor);
     setBrushColor(brushColor);
     setBrushWidth(brushWidth);
+    setHintAfterStrokes(hintAfterStrokes);
+    setHintColor(hintColor);
   }
 
   @override
   dispose() {
-    _animationController.dispose();
+    _strokeAnimationController.dispose();
+    _hintAnimationController.dispose();
     super.dispose();
   }
 
   void startAnimation() {
     if (!_isAnimating && !_isQuizzing) {
-      if (_currentStroke == _nStrokes) {
-        _currentStroke = 0;
+      if (currentStroke == _nStrokes) {
+        _setCurrentStroke(0);
       }
       _isAnimating = true;
-      _animationController.forward();
+      _strokeAnimationController.forward();
       notifyListeners();
     }
   }
 
   void stopAnimation() {
     if (_isAnimating) {
-      _currentStroke += 1;
+      _setCurrentStroke(currentStroke + 1);
       _isAnimating = false;
-      _animationController.reset();
+      _strokeAnimationController.reset();
       notifyListeners();
     }
   }
@@ -118,8 +143,8 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   void startQuiz() {
     if (!_isQuizzing) {
       _isAnimating = false;
-      _currentStroke = 0;
-      _animationController.reset();
+      _setCurrentStroke(0);
+      _strokeAnimationController.reset();
       _isQuizzing = true;
       notifyListeners();
     }
@@ -128,7 +153,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   void stopQuiz() {
     if (_isQuizzing) {
       _isAnimating = false;
-      _animationController.reset();
+      _strokeAnimationController.reset();
       _isQuizzing = false;
       notifyListeners();
     }
@@ -136,20 +161,20 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 
   void nextStroke() {
     if (!_isQuizzing) {
-      if (_currentStroke == _nStrokes) {
-        _currentStroke = 1;
+      if (currentStroke == _nStrokes) {
+        _setCurrentStroke(1);
       } else if (_isAnimating) {
-        _currentStroke += 1;
-        _animationController.reset();
+        _setCurrentStroke(currentStroke + 1);
+        _strokeAnimationController.reset();
 
-        if (_currentStroke < _nStrokes) {
-          _animationController.forward();
+        if (currentStroke < _nStrokes) {
+          _strokeAnimationController.forward();
         } else {
           _isAnimating = false;
         }
       } else {
-        if (_currentStroke < _nStrokes) {
-          _currentStroke += 1;
+        if (currentStroke < _nStrokes) {
+          _setCurrentStroke(currentStroke + 1);
         }
       }
 
@@ -159,13 +184,13 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 
   void previousStroke() {
     if (!_isQuizzing) {
-      if (_currentStroke != 0) {
-        _currentStroke -= 1;
+      if (currentStroke != 0) {
+        _setCurrentStroke(currentStroke - 1);
       }
 
       if (_isAnimating) {
-        _animationController.reset();
-        _animationController.forward();
+        _strokeAnimationController.reset();
+        _strokeAnimationController.forward();
       }
 
       notifyListeners();
@@ -173,27 +198,27 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   }
 
   void reset() {
-    _currentStroke = 0;
+    _setCurrentStroke(0);
     _isAnimating = false;
-    _animationController.reset();
+    _strokeAnimationController.reset();
     notifyListeners();
   }
 
   void showFullCharacter() {
     if (!_isQuizzing) {
-      _currentStroke = _nStrokes;
+      _setCurrentStroke(_nStrokes);
       _isAnimating = false;
-      _animationController.reset();
+      _strokeAnimationController.reset();
       notifyListeners();
     }
   }
 
   void _strokeCompleted(AnimationStatus status) {
     if (status == AnimationStatus.completed) {
-      _currentStroke += 1;
-      _animationController.reset();
-      if (_currentStroke < _nStrokes) {
-        _animationController.forward();
+      _setCurrentStroke(currentStroke + 1);
+      _strokeAnimationController.reset();
+      if (currentStroke < _nStrokes) {
+        _strokeAnimationController.forward();
       } else {
         _isAnimating = false;
       }
@@ -246,8 +271,18 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setHintColor(Color value) {
+    _hintColor = value;
+    notifyListeners();
+  }
+
   void setBrushWidth(double value) {
     _brushWidth = value;
+    notifyListeners();
+  }
+
+  void setHintAfterStrokes(int value) {
+    _hintAfterStrokes = value;
     notifyListeners();
   }
 
@@ -361,11 +396,23 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 
       if (_isQuizzing && currentStroke < nStrokes) {
         if (strokeIsCorrect) {
-          _currentStroke += 1;
+          _setCurrentStroke(currentStroke + 1);
 
           notifyListeners();
+        } else {
+          _badTriesThisStroke += 1;
+          if (_badTriesThisStroke >= hintAfterStrokes) {
+            _hintAnimationController.reset();
+            _hintAnimationController.forward();
+          }
         }
       }
     }
+  }
+
+  void _setCurrentStroke(int value) {
+    _currentStroke = value;
+    _badTriesThisStroke = 0;
+    notifyListeners();
   }
 }
