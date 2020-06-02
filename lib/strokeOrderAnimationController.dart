@@ -41,11 +41,16 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   Color _outlineColor;
   Color _medianColor;
   Color _radicalColor;
+  Color _brushColor;
 
   Color get strokeColor => _strokeColor;
   Color get outlineColor => _outlineColor;
   Color get medianColor => _medianColor;
   Color get radicalColor => _radicalColor;
+  Color get brushColor => _brushColor;
+
+  double _brushWidth;
+  double get brushWidth => _brushWidth;
 
   StrokeOrderAnimationController(
     this._strokeOrder,
@@ -59,6 +64,8 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     Color outlineColor: Colors.black,
     Color medianColor: Colors.black,
     Color radicalColor: Colors.red,
+    Color brushColor: Colors.black,
+    double brushWidth: 8.0,
   }) {
     _animationController = AnimationController(
       vsync: _tickerProvider,
@@ -78,6 +85,8 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     setOutlineColor(outlineColor);
     setMedianColor(medianColor);
     setRadicalColor(radicalColor);
+    setBrushColor(brushColor);
+    setBrushWidth(brushWidth);
   }
 
   @override
@@ -229,6 +238,16 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 
   void setRadicalColor(Color value) {
     _radicalColor = value;
+    notifyListeners();
+  }
+
+  void setBrushColor(Color value) {
+    _brushColor = value;
+    notifyListeners();
+  }
+
+  void setBrushWidth(double value) {
+    _brushWidth = value;
     notifyListeners();
   }
 

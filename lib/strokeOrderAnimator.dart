@@ -79,7 +79,9 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
           if (widget._controller.isQuizzing)
             Container(
               child: CustomPaint(
-                painter: Brush(points),
+                painter: Brush(points,
+                    brushColor: widget._controller.brushColor,
+                    brushWidth: widget._controller.brushWidth),
               ),
             ),
         ],
@@ -246,8 +248,14 @@ double distance2D(List<double> p, List<double> q) {
 
 class Brush extends CustomPainter {
   final List<Offset> points;
+  final Color brushColor;
+  final double brushWidth;
 
-  Brush(this.points);
+  Brush(
+    this.points, {
+    this.brushColor = Colors.black,
+    this.brushWidth = 8.0,
+  });
 
   @override
   bool shouldRepaint(Brush oldDelegate) {
@@ -256,9 +264,9 @@ class Brush extends CustomPainter {
 
   void paint(Canvas canvas, Size size) {
     Paint paint = Paint()
-      ..color = Colors.black
+      ..color = brushColor
       ..strokeCap = StrokeCap.round
-      ..strokeWidth = 8.0;
+      ..strokeWidth = brushWidth;
 
     for (int i = 0; i < points.length - 1; i++) {
       if (points[i] != null && points[i + 1] != null) {
