@@ -1,3 +1,8 @@
+Version 1.3.0
+
+Introduced a quiz mode
+Normalized animation speeds per stroke
+
 Version 1.2.0
 
 Created example project

@@ -304,13 +304,13 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   }
 
   void _setNormalizedStrokeAnimationSpeed(double normFactor) {
-    _strokeAnimationController.duration =
-        Duration(milliseconds: (normFactor / _strokeAnimationSpeed * 1000).toInt());
+    _strokeAnimationController.duration = Duration(
+        milliseconds: (normFactor / _strokeAnimationSpeed * 1000).toInt());
   }
 
   void _setNormalizedHintAnimationSpeed(double normFactor) {
-    _hintAnimationController.duration =
-        Duration(milliseconds: (normFactor / _hintAnimationSpeed * 1000).toInt());
+    _hintAnimationController.duration = Duration(
+        milliseconds: (normFactor / _hintAnimationSpeed * 1000).toInt());
   }
 
   void setStrokeOrder(String strokeOrder) {
@@ -458,7 +458,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
       final medianLength = medianPath.computeMetrics().first.length;
 
       if (medianLength > 0) {
-        final normFactor = (medianLength/520).clamp(0.5, 1.5);
+        final normFactor = (medianLength / 520).clamp(0.5, 1.5);
         _setNormalizedStrokeAnimationSpeed(normFactor);
         _setNormalizedHintAnimationSpeed(normFactor);
       }
