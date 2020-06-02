@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:stroke_order_animator/strokeOrderAnimationController.dart';
 
+/// A widget for displaying a stroke order diagram.
+/// Takes a `StrokeOrderAnimationController` as argument.
 class StrokeOrderAnimator extends StatefulWidget {
   final StrokeOrderAnimationController _controller;
 

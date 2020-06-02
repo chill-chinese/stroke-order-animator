@@ -6,6 +6,11 @@ import 'package:flutter/widgets.dart';
 import 'package:stroke_order_animator/strokeOrderAnimator.dart';
 import 'package:svg_path_parser/svg_path_parser.dart';
 
+/// A ChangeNotifier that controls the behaviour of a stroke order diagram.
+/// It must be passed as an argument to a [StrokeOrderAnimator] that handles
+/// the actual presentation of the diagram. It can be consumed by the
+/// [StrokeOrderAnimator] and an app to allow for synchronization of, e.g.,
+/// control buttons with the animations.
 class StrokeOrderAnimationController extends ChangeNotifier {
   String _strokeOrder;
   final TickerProvider _tickerProvider;
