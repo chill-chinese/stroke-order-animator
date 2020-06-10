@@ -7,6 +7,8 @@ That data is available under the [ARPHIC public license](ARPHICPL.txt).
 
 The package uses a `StrokeOrderAnimationController` that handles the animation state and serves as an interface between your app and the stroke order animation. The stroke order data has to be passed in as a JSON string. In order to control animations, a `TickerProvider` must be passed to the controller, for example using a `TickerProviderStateMixin`. The controller is then passed as an argument to the `StrokeOrderAnimator` that displays the actual stroke order diagram.
 
+When using the animations in a PageView or ListView, it is recommended to use a unique key for every `StrokeOrderAnimator` and cancel the animation when the selected page changes in order to avoid broken animation behaviour.
+
 All attributes and actions of the stroke order diagram are controlled via the `StrokeOrderAnimationController` and can be changed anytime using the respective setter methods.
 
 ### Attributes
