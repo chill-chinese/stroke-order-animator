@@ -92,6 +92,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                   ),
                   onPageChanged: (index) {
                     setState(() {
+                      _strokeOrderAnimationControllers[_selectedIndex]
+                          .stopAnimation();
                       _selectedIndex = index;
                     });
                   },
