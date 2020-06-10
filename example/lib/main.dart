@@ -86,6 +86,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     (index) => FittedBox(
                       child: StrokeOrderAnimator(
                         _strokeOrderAnimationControllers[index],
+                        key: UniqueKey(),
                       ),
                     ),
                   ),
