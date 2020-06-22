@@ -1,3 +1,7 @@
+## Version 1.4.1
+
+* Fixed [a bug](https://github.com/Mr-Pepe/stroke-order-animator/issues/7) in stroke checking
+
 ## Version 1.4.0
 
 * Allow usage of keys to prevent broken animations in lists and page views
