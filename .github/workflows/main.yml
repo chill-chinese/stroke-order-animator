@@ -18,4 +18,3 @@ jobs:
         with:
           accessToken: ${{ secrets.OAUTH_ACCESS_TOKEN }}
           refreshToken: ${{ secrets.OAUTH_REFRESH_TOKEN }}
-          dryRunOnly: true
