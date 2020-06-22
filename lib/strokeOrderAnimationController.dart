@@ -365,16 +365,18 @@ class StrokeOrderAnimationController extends ChangeNotifier {
         }
       }
 
+      final medianLength = medianPath.computeMetrics().first.length;
+
       final strokePath = Path();
+      double strokeLength = 0;
       if (points.length > 1) {
         strokePath.moveTo(points[0].dx, points[0].dy);
         for (var point in points) {
           strokePath.lineTo(point.dx, point.dy);
         }
-      }
 
-      final medianLength = medianPath.computeMetrics().first.length;
-      final strokeLength = strokePath.computeMetrics().first.length;
+        strokeLength = strokePath.computeMetrics().first.length;
+      }
 
       // Check whether the drawn stroke is correct
       double startEndMargin = 150;
