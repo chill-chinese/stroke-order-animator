@@ -119,10 +119,10 @@ class StrokePainter extends CustomPainter {
   final bool showOutline;
   final bool showStroke;
   final bool showMedian;
-  final List<List<int>> median;
+  final List<Offset> median;
 
-  List<double> strokeStart = [];
-  List<double> strokeEnd = [];
+  double strokeStart = -1;
+  double strokeEnd = -1;
 
   Path visibleStroke = Path();
 
@@ -136,27 +136,27 @@ class StrokePainter extends CustomPainter {
     this.medianColor = Colors.black,
     this.animate = false,
     this.animation,
-    this.median = const [<int>[]],
+    this.median = const [],
   }) : super(repaint: animation);
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (strokeStart.isEmpty) {
+    if (strokeStart < 0) {
       // Calculate the points on strokeOutlinePath that are closest to the start and end points of the median
-      strokeStart = getClosestPointOnPath(strokeOutlinePath, median.first);
-      strokeEnd = getClosestPointOnPath(strokeOutlinePath, median.last);
+      strokeStart = getClosestPointOnPathAsDistanceOnPath(strokeOutlinePath, median.first);
+      strokeEnd = getClosestPointOnPathAsDistanceOnPath(strokeOutlinePath, median.last);
     }
 
     var strokePaint = Paint()
       ..color = strokeColor
       ..style = PaintingStyle.fill;
 
-    if (animate == true && animation != null && median[0].isNotEmpty) {
-      if (strokeStart.isNotEmpty && strokeEnd.isNotEmpty) {
+    if (animate == true && animation != null && median.isNotEmpty) {
+      if (strokeStart >= 0 && strokeEnd >= 0) {
         // Split the original path into two paths that follow the outline
         // of the stroke from strokeStart to strokeEnd clockwise and counter-clockwise
         List<Path> contourPaths = extractContourPaths(
-            strokeOutlinePath, strokeStart.last, strokeEnd.last);
+            strokeOutlinePath, strokeStart, strokeEnd);
 
         // Go on the first contourPath first, then jump over to the second path and go back to the start
         final lenFirstPath = contourPaths.first.computeMetrics().first.length;
@@ -187,9 +187,9 @@ class StrokePainter extends CustomPainter {
 
     if (showMedian) {
       final medianPath = Path();
-      medianPath.moveTo(median[0][0].toDouble(), median[0][1].toDouble());
+      medianPath.moveTo(median[0].dx.toDouble(), median[0].dy.toDouble());
       for (var point in median) {
-        medianPath.lineTo(point[0].toDouble(), point[1].toDouble());
+        medianPath.lineTo(point.dx.toDouble(), point.dy.toDouble());
       }
       canvas.drawPath(
           medianPath,
@@ -226,42 +226,42 @@ List<Path> extractContourPaths(
   return [path1, path2];
 }
 
-List<double> getClosestPointOnPath(Path path, List<int> queryPoint) {
+double getClosestPointOnPathAsDistanceOnPath(Path path, Offset queryPoint) {
   PathMetric metrics = path.computeMetrics().toList()[0];
 
   int nSteps = 100;
   double pathLength = metrics.length;
   double stepSize = pathLength / nSteps;
 
-  List<List<double>> pointsOnPath = [];
+  List<Offset> pointsOnPath = [];
 
   double minDistance = double.infinity;
 
   // x, y, and length on the path where that point lies
-  List<double> closestPoint = [0, 0, 0];
+  double closestPoint = -1;
 
   // Sample nSteps points on the path
   for (var step = 0.0; step < pathLength; step += stepSize) {
     final tangent = metrics.getTangentForOffset(step);
-    pointsOnPath.add([tangent.position.dx, tangent.position.dy]);
+    pointsOnPath.add(tangent.position);
   }
 
   // Find the point on the path closest to the query
   for (var iPoint = 0; iPoint < pointsOnPath.length; iPoint++) {
     final point = pointsOnPath[iPoint];
     final distance =
-        distance2D(point, queryPoint.map((e) => e.toDouble()).toList());
+        distance2D(point, queryPoint);
     if (distance < minDistance) {
       minDistance = distance;
-      closestPoint = [point[0], point[1], iPoint * stepSize];
+      closestPoint = iPoint * stepSize;
     }
   }
 
   return closestPoint;
 }
 
-double distance2D(List<double> p, List<double> q) {
-  return sqrt(pow(p[0] - q[0], 2) + pow(p[1] - q[1], 2));
+double distance2D(Offset p, Offset q) {
+  return sqrt(pow(p.dx - q.dx, 2) + pow(p.dy - q.dy, 2));
 }
 
 class Brush extends CustomPainter {
