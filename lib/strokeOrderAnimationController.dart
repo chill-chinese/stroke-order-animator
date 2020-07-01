@@ -70,7 +70,6 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   double _brushWidth;
   double get brushWidth => _brushWidth;
 
-  int _badTriesThisStroke = 0;
   int _hintAfterStrokes;
   int get hintAfterStrokes => _hintAfterStrokes;
 
@@ -110,6 +109,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     });
 
     setStrokeOrder(_strokeOrder);
+    _summary = QuizSummary(_nStrokes);
     _setCurrentStroke(0);
     setShowStroke(showStroke);
     setShowOutline(showOutline);
@@ -130,7 +130,6 @@ class StrokeOrderAnimationController extends ChangeNotifier {
       addOnQuizCompleteCallback(onQuizCompleteCallback);
     }
 
-    _summary = QuizSummary(_nStrokes);
   }
 
   @override
@@ -409,8 +408,8 @@ class StrokeOrderAnimationController extends ChangeNotifier {
           notifyListeners();
         } else {
           summary.mistakes[currentStroke] += 1;
-          if (_badTriesThisStroke >= hintAfterStrokes &&
-              !debugSemanticsDisableAnimations) {
+          if (summary.mistakes[currentStroke] >= hintAfterStrokes &&
+              !(debugSemanticsDisableAnimations ?? false)) {
             _hintAnimationController.reset();
             _hintAnimationController.forward();
           }
@@ -488,7 +487,6 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 
   void _setCurrentStroke(int value) {
     _currentStroke = value;
-    _badTriesThisStroke = 0;
 
     // Normalize the animation speed to the length of the stroke
     // The first stroke of 你 (length 520) is taken as reference
