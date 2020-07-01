@@ -41,6 +41,8 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   QuizSummary _summary;
   QuizSummary get summary => _summary;
 
+  List<Function> onQuizCompleteCallbacks = [];
+
   bool _showStroke;
   bool _showOutline;
   bool _showMedian;
@@ -89,6 +91,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     double brushWidth: 8.0,
     int hintAfterStrokes: 3,
     Color hintColor: Colors.lightBlueAccent,
+    Function onQuizCompleteCallback,
   }) {
     _strokeAnimationController = AnimationController(
       vsync: _tickerProvider,
@@ -122,6 +125,10 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     setHintColor(hintColor);
     setStrokeAnimationSpeed(strokeAnimationSpeed);
     setHintAnimationSpeed(hintAnimationSpeed);
+
+    if (onQuizCompleteCallback != null) {
+      addOnQuizCompleteCallback(onQuizCompleteCallback);
+    }
 
     _summary = QuizSummary(_nStrokes);
   }
@@ -321,6 +328,10 @@ class StrokeOrderAnimationController extends ChangeNotifier {
         milliseconds: (normFactor / _hintAnimationSpeed * 1000).toInt());
   }
 
+  void addOnQuizCompleteCallback(Function onQuizCompleteCallback) {
+    onQuizCompleteCallbacks.add(onQuizCompleteCallback);
+  }
+
   void setStrokeOrder(String strokeOrder) {
     final parsedJson = json.decode(_strokeOrder.replaceAll("'", '"'));
 
@@ -390,6 +401,9 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 
           if (currentStroke == nStrokes) {
             stopQuiz();
+            for (var callback in onQuizCompleteCallbacks) {
+              callback(summary);
+            }
           }
 
           notifyListeners();
@@ -500,6 +514,8 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 
     notifyListeners();
   }
+
+  
 }
 
 class QuizSummary {
