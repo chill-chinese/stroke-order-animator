@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:stroke_order_animator/strokeOrderAnimator.dart';
@@ -36,6 +37,9 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   bool get isQuizzing => _isQuizzing;
   double _strokeAnimationSpeed = 1;
   double _hintAnimationSpeed = 3;
+
+  QuizSummary _summary;
+  QuizSummary get summary => _summary;
 
   bool _showStroke;
   bool _showOutline;
@@ -118,6 +122,8 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     setHintColor(hintColor);
     setStrokeAnimationSpeed(strokeAnimationSpeed);
     setHintAnimationSpeed(hintAnimationSpeed);
+
+    _summary = QuizSummary(_nStrokes);
   }
 
   @override
@@ -151,6 +157,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     if (!_isQuizzing) {
       _isAnimating = false;
       _setCurrentStroke(0);
+      summary.reset();
       _strokeAnimationController.reset();
       _isQuizzing = true;
       notifyListeners();
@@ -208,6 +215,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     _setCurrentStroke(0);
     _isAnimating = false;
     _strokeAnimationController.reset();
+    summary.reset();
     notifyListeners();
   }
 
@@ -386,8 +394,9 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 
           notifyListeners();
         } else {
-          _badTriesThisStroke += 1;
-          if (_badTriesThisStroke >= hintAfterStrokes) {
+          summary.mistakes[currentStroke] += 1;
+          if (_badTriesThisStroke >= hintAfterStrokes &&
+              !debugSemanticsDisableAnimations) {
             _hintAnimationController.reset();
             _hintAnimationController.forward();
           }
@@ -490,5 +499,24 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     }
 
     notifyListeners();
+  }
+}
+
+class QuizSummary {
+  int _nStrokes;
+  int get nStrokes => _nStrokes;
+
+  List<int> mistakes;
+
+  int get nTotalMistakes =>
+      mistakes.fold(0, (previous, current) => previous + current);
+
+  QuizSummary(int nStrokes) {
+    _nStrokes = nStrokes;
+    reset();
+  }
+
+  void reset() {
+    mistakes = List.generate(nStrokes, (index) => 0);
   }
 }

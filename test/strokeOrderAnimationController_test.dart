@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stroke_order_animator/strokeOrderAnimationController.dart';
 
@@ -12,6 +13,7 @@ final strokeOrders = [
 
 void main() {
   final tickerProvider = TestVSync();
+   debugSemanticsDisableAnimations = true;
 
   test("Test stroke count", () {
     final controllers = List.generate(
@@ -32,12 +34,16 @@ void main() {
         StrokeOrderAnimationController(strokeOrders[0], tickerProvider);
 
     test('Next stroke', () {
+      controller.reset();
       controller.nextStroke();
       controller.nextStroke();
       expect(controller.currentStroke, 2);
     });
 
     test('Previous stroke', () {
+      controller.reset();
+      controller.nextStroke();
+      controller.nextStroke();
       controller.previousStroke();
       expect(controller.currentStroke, 1);
     });
@@ -61,8 +67,16 @@ void main() {
     final controller =
         StrokeOrderAnimationController(strokeOrders[0], tickerProvider);
 
+    final wrongStroke0 = [Offset(0, 0), Offset(10, 10)];
+    final correctStroke0 = [Offset(430, 80), Offset(540, 160)];
+    final inverseStroke0 = [Offset(540, 160), Offset(430, 80)];
+
+    final controller2 =
+        StrokeOrderAnimationController(strokeOrders[1], tickerProvider);
+
     test('Start quiz', () {
       controller.startQuiz();
+      controller.reset();
       expect(controller.isQuizzing, true);
       expect(controller.isAnimating, false);
       expect(controller.currentStroke, 0);
@@ -76,20 +90,72 @@ void main() {
       });
 
       test('Correct stroke gets accepted', () {
-        controller.checkStroke([Offset(430, 80), Offset(540, 160)]);
+        controller.checkStroke(correctStroke0);
         expect(controller.currentStroke, 1);
       });
 
       test('Wrong stroke does not get accepted', () {
         controller.reset();
-        controller.checkStroke([Offset(0, 0), Offset(10, 10)]);
+        controller.checkStroke(wrongStroke0);
         expect(controller.currentStroke, 0);
       });
 
       test('Inverse stroke does not get accepted', () {
         controller.reset();
-        controller.checkStroke([Offset(540, 160), Offset(430, 80)]);
+        controller.checkStroke(inverseStroke0);
         expect(controller.currentStroke, 0);
+      });
+    });
+
+    group('Quiz summary', () {
+      controller.startQuiz();
+
+      test('Summary is initially empty', () {
+        controller.reset();
+        controller2.reset();
+        expect(controller.summary.nStrokes, 5);
+        expect(controller2.summary.nStrokes, 7);
+        expect(controller.summary.nTotalMistakes, 0);
+        expect(controller.summary.mistakes[0], 0);
+        expect(controller.summary.mistakes[4], 0);
+      });
+
+      test('Wrong stroke increases number of total mistakes', () {
+        controller.reset();
+        controller.checkStroke(wrongStroke0);
+        expect(controller.summary.nTotalMistakes, 1);
+        controller.checkStroke(wrongStroke0);
+        expect(controller.summary.nTotalMistakes, 2);
+      });
+
+      test('Reset resets number of single and total mistakes', () {
+        controller.checkStroke(wrongStroke0);
+        controller.reset();
+        expect(controller.summary.nTotalMistakes, 0);
+        for (var nMistakes in controller.summary.mistakes) {
+          expect(nMistakes, 0);
+        }
+      });
+
+      test('Mistakes get counted separately for each stroke', () {
+        controller.reset();
+        controller.checkStroke(wrongStroke0);
+        expect(controller.summary.mistakes[0], 1);
+
+        controller.checkStroke(correctStroke0);
+        controller.checkStroke(wrongStroke0);
+        controller.checkStroke(wrongStroke0);
+        expect(controller.summary.mistakes[0], 1);
+        expect(controller.summary.mistakes[1], 2);
+      });
+
+
+      test('Summary gets reset when quiz starts', () {
+        controller.reset();
+        controller.checkStroke(wrongStroke0);
+        controller.stopQuiz();
+        controller.startQuiz();
+        expect(controller.summary.nTotalMistakes, 0);
       });
     });
   });
