@@ -1,3 +1,7 @@
+## Version 1.5.0
+
+* Added callbacks for quiz completion and wrong and correct strokes during quizzes
+
 ## Version 1.4.1
 
 * Fixed [a bug](https://github.com/Mr-Pepe/stroke-order-animator/issues/7) in stroke checking
