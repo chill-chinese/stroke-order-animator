@@ -162,7 +162,7 @@ void main() {
 
     group('Callbacks', () {
       final controller =
-        StrokeOrderAnimationController(strokeOrders[5], tickerProvider);
+          StrokeOrderAnimationController(strokeOrders[5], tickerProvider);
 
       final correctStroke0 = [Offset(316, 245), Offset(722, 208)];
       final correctStroke1 = [Offset(331, 493), Offset(700, 468)];
@@ -187,8 +187,10 @@ void main() {
         expect(nCalledOnQuizComplete1, 1);
       });
 
-      test('Summary passed to callback contains correct mistakes information', () {
+      test('Summary passed to callback contains correct mistakes information',
+          () {
         controller.startQuiz();
+        controller.reset();
         controller.checkStroke(correctStroke0);
         controller.checkStroke(wrongStroke0);
         controller.checkStroke(wrongStroke0);
@@ -225,6 +227,44 @@ void main() {
         expect(summary1.mistakes[0], summary2.mistakes[0]);
         expect(summary1.mistakes[1], summary2.mistakes[1]);
         expect(summary1.mistakes[2], summary2.mistakes[2]);
+      });
+
+      test('Callback gets called on wrong stroke with the current stroke index',
+          () {
+        int wrongStroke = -1;
+
+        final onWrongStroke = (iStroke) {
+          wrongStroke = iStroke;
+        };
+
+        controller.addOnWrongStrokeCallback(onWrongStroke);
+
+        controller.startQuiz();
+        controller.reset();
+        controller.checkStroke(wrongStroke0);
+        expect(wrongStroke, 0);
+        controller.checkStroke(correctStroke0);
+        controller.checkStroke(wrongStroke0);
+        expect(wrongStroke, 1);
+      });
+
+      test(
+          'Callback gets called on correct stroke with the current stroke index',
+          () {
+        int correctStroke = -1;
+
+        final onCorrectStroke = (iStroke) {
+          correctStroke = iStroke;
+        };
+
+        controller.addOnCorrectStrokeCallback(onCorrectStroke);
+
+        controller.startQuiz();
+        controller.reset();
+        controller.checkStroke(correctStroke0);
+        expect(correctStroke, 0);
+        controller.checkStroke(correctStroke1);
+        expect(correctStroke, 1);
       });
     });
   });

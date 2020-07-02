@@ -41,7 +41,9 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   QuizSummary _summary;
   QuizSummary get summary => _summary;
 
-  List<Function> onQuizCompleteCallbacks = [];
+  List<Function> _onQuizCompleteCallbacks = [];
+  List<Function> _onWrongStrokeCallbacks = [];
+  List<Function> _onCorrectStrokeCallbacks = [];
 
   bool _showStroke;
   bool _showOutline;
@@ -91,6 +93,8 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     int hintAfterStrokes: 3,
     Color hintColor: Colors.lightBlueAccent,
     Function onQuizCompleteCallback,
+    Function onWrongStrokeCallback,
+    Function onCorrectStrokeCallback,
   }) {
     _strokeAnimationController = AnimationController(
       vsync: _tickerProvider,
@@ -130,12 +134,22 @@ class StrokeOrderAnimationController extends ChangeNotifier {
       addOnQuizCompleteCallback(onQuizCompleteCallback);
     }
 
+    if (onWrongStrokeCallback != null) {
+      addOnWrongStrokeCallback(onWrongStrokeCallback);
+    }
+
+    if (onCorrectStrokeCallback != null) {
+      addOnCorrectStrokeCallback(onCorrectStrokeCallback);
+    }
   }
 
   @override
   dispose() {
     _strokeAnimationController.dispose();
     _hintAnimationController.dispose();
+    _onCorrectStrokeCallbacks.clear();
+    _onWrongStrokeCallbacks.clear();
+    _onQuizCompleteCallbacks.clear();
     super.dispose();
   }
 
@@ -328,7 +342,15 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   }
 
   void addOnQuizCompleteCallback(Function onQuizCompleteCallback) {
-    onQuizCompleteCallbacks.add(onQuizCompleteCallback);
+    _onQuizCompleteCallbacks.add(onQuizCompleteCallback);
+  }
+
+  void addOnWrongStrokeCallback(Function onWrongStrokeCallback) {
+    _onWrongStrokeCallbacks.add(onWrongStrokeCallback);
+  }
+
+  void addOnCorrectStrokeCallback(Function onCorrectStrokeCallback) {
+    _onCorrectStrokeCallbacks.add(onCorrectStrokeCallback);
   }
 
   void setStrokeOrder(String strokeOrder) {
@@ -396,11 +418,15 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 
       if (_isQuizzing && currentStroke < nStrokes) {
         if (strokeIsCorrect) {
+          for (var callback in _onCorrectStrokeCallbacks) {
+            callback(currentStroke);
+          }
+
           _setCurrentStroke(currentStroke + 1);
 
           if (currentStroke == nStrokes) {
             stopQuiz();
-            for (var callback in onQuizCompleteCallbacks) {
+            for (var callback in _onQuizCompleteCallbacks) {
               callback(summary);
             }
           }
@@ -408,6 +434,10 @@ class StrokeOrderAnimationController extends ChangeNotifier {
           notifyListeners();
         } else {
           summary.mistakes[currentStroke] += 1;
+          for (var callback in _onWrongStrokeCallbacks) {
+            callback(currentStroke);
+          }
+
           if (summary.mistakes[currentStroke] >= hintAfterStrokes &&
               !(debugSemanticsDisableAnimations ?? false)) {
             _hintAnimationController.reset();
@@ -512,8 +542,6 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 
     notifyListeners();
   }
-
-  
 }
 
 class QuizSummary {
