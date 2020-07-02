@@ -11,7 +11,8 @@ When using the animations in a PageView or ListView, it is recommended to use a 
 
 All attributes and actions of the stroke order diagram are controlled via the `StrokeOrderAnimationController` and can be changed anytime using the respective setter methods.
 
-### Attributes
+## Attributes
+
 * Animation speed of stroke animations and hints in quiz mode (3 is pretty fast)
 * Whether to show/hide strokes
 * Whether to show/hide outlines
@@ -26,14 +27,24 @@ All attributes and actions of the stroke order diagram are controlled via the `S
 * Number of wrong strokes before showing a hint in quiz mode
 * Hint color in quiz mode
 
-### Controls
+## Controls
+
 * Start/stop animation
 * Start/stop quiz
 * Show next/previous stroke
 * Show full character
 * Reset animation/quiz
 
-Please file an issue on the project page if something doesn't work as expected or if you have a feature request.
+## Callbacks
+
+To better integrate the quizzes, three callbacks can be either passed to the `StrokeOrderAnimationController` during instantiation or afterwards using the `add...Callback` method:
+* onWrongStrokeCallback
+* onCorrectStrokeCallback
+* onQuizCompleteCallback
+
+The `onQuizCompleteCallback` receives a `Quizsummary` containing the number of mistakes on a per-stroke basis. There other two callbacks receive the index of the stroke that was written (in-)correctly. All indices are zero-based.
+
+## Example
 
 To run an example showing several stroke order diagrams in a swipeable page view run the following:
 
@@ -42,3 +53,11 @@ git clone https://github.com/Mr-Pepe/stroke-order-animator
 cd stroke-order-animator/example/
 flutter run
 ```
+
+## Issues and feature requests
+
+Please file an issue on the project page if something doesn't work as expected or if you have a feature request.
+
+## Contribute
+
+Feel free to open a pull request. Just make sure to write extensive tests.

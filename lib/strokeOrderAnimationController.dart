@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:stroke_order_animator/strokeOrderAnimator.dart';
@@ -23,7 +24,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   int get currentStroke => _currentStroke;
   List<Path> _strokes;
   List<Path> get strokes => _strokes;
-  List<List<List<int>>> medians;
+  List<List<Offset>> medians;
 
   AnimationController _strokeAnimationController;
   AnimationController get strokeAnimationController =>
@@ -36,6 +37,13 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   bool get isQuizzing => _isQuizzing;
   double _strokeAnimationSpeed = 1;
   double _hintAnimationSpeed = 3;
+
+  QuizSummary _summary;
+  QuizSummary get summary => _summary;
+
+  List<Function> _onQuizCompleteCallbacks = [];
+  List<Function> _onWrongStrokeCallbacks = [];
+  List<Function> _onCorrectStrokeCallbacks = [];
 
   bool _showStroke;
   bool _showOutline;
@@ -64,7 +72,6 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   double _brushWidth;
   double get brushWidth => _brushWidth;
 
-  int _badTriesThisStroke = 0;
   int _hintAfterStrokes;
   int get hintAfterStrokes => _hintAfterStrokes;
 
@@ -85,6 +92,9 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     double brushWidth: 8.0,
     int hintAfterStrokes: 3,
     Color hintColor: Colors.lightBlueAccent,
+    Function onQuizCompleteCallback,
+    Function onWrongStrokeCallback,
+    Function onCorrectStrokeCallback,
   }) {
     _strokeAnimationController = AnimationController(
       vsync: _tickerProvider,
@@ -103,6 +113,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     });
 
     setStrokeOrder(_strokeOrder);
+    _summary = QuizSummary(_nStrokes);
     _setCurrentStroke(0);
     setShowStroke(showStroke);
     setShowOutline(showOutline);
@@ -118,12 +129,27 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     setHintColor(hintColor);
     setStrokeAnimationSpeed(strokeAnimationSpeed);
     setHintAnimationSpeed(hintAnimationSpeed);
+
+    if (onQuizCompleteCallback != null) {
+      addOnQuizCompleteCallback(onQuizCompleteCallback);
+    }
+
+    if (onWrongStrokeCallback != null) {
+      addOnWrongStrokeCallback(onWrongStrokeCallback);
+    }
+
+    if (onCorrectStrokeCallback != null) {
+      addOnCorrectStrokeCallback(onCorrectStrokeCallback);
+    }
   }
 
   @override
   dispose() {
     _strokeAnimationController.dispose();
     _hintAnimationController.dispose();
+    _onCorrectStrokeCallbacks.clear();
+    _onWrongStrokeCallbacks.clear();
+    _onQuizCompleteCallbacks.clear();
     super.dispose();
   }
 
@@ -151,6 +177,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     if (!_isQuizzing) {
       _isAnimating = false;
       _setCurrentStroke(0);
+      summary.reset();
       _strokeAnimationController.reset();
       _isQuizzing = true;
       notifyListeners();
@@ -208,6 +235,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     _setCurrentStroke(0);
     _isAnimating = false;
     _strokeAnimationController.reset();
+    summary.reset();
     notifyListeners();
   }
 
@@ -313,6 +341,18 @@ class StrokeOrderAnimationController extends ChangeNotifier {
         milliseconds: (normFactor / _hintAnimationSpeed * 1000).toInt());
   }
 
+  void addOnQuizCompleteCallback(Function onQuizCompleteCallback) {
+    _onQuizCompleteCallbacks.add(onQuizCompleteCallback);
+  }
+
+  void addOnWrongStrokeCallback(Function onWrongStrokeCallback) {
+    _onWrongStrokeCallbacks.add(onWrongStrokeCallback);
+  }
+
+  void addOnCorrectStrokeCallback(Function onCorrectStrokeCallback) {
+    _onCorrectStrokeCallbacks.add(onCorrectStrokeCallback);
+  }
+
   void setStrokeOrder(String strokeOrder) {
     final parsedJson = json.decode(_strokeOrder.replaceAll("'", '"'));
 
@@ -325,12 +365,8 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 
     medians = List.generate(parsedJson['medians'].length, (iStroke) {
       return List.generate(parsedJson['medians'][iStroke].length, (iPoint) {
-        return List<int>.generate(
-            parsedJson['medians'][iStroke][iPoint].length,
-            (iCoordinate) => iCoordinate == 0
-                ? parsedJson['medians'][iStroke][iPoint][iCoordinate]
-                : parsedJson['medians'][iStroke][iPoint][iCoordinate] * -1 +
-                    900);
+        return Offset((parsedJson['medians'][iStroke][iPoint][0]).toDouble(),
+            (parsedJson['medians'][iStroke][iPoint][1] * -1 + 900).toDouble());
       });
     });
 
@@ -347,39 +383,21 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     bool strokeIsCorrect = false;
 
     if (currentStroke < nStrokes) {
-      List<Offset> points = [];
-      for (var point in rawPoints) {
-        if (point != null) {
-          points.add(point);
-        }
-      }
+      List<Offset> points = getNonNullPointsFrom(rawPoints);
 
       final currentMedian = medians[currentStroke];
 
-      final medianPath = Path();
-      if (currentMedian.length > 1) {
-        medianPath.moveTo(
-            currentMedian[0][0].toDouble(), currentMedian[0][1].toDouble());
-        for (var point in currentMedian) {
-          medianPath.lineTo(point[0].toDouble(), point[1].toDouble());
-        }
-      }
+      final medianPath = convertOffsetsToPath(currentMedian);
+      final medianLength = getPathLength(medianPath);
 
-      final medianLength = medianPath.computeMetrics().first.length;
+      final strokePath = convertOffsetsToPath(points);
+      final strokeLength = getPathLength(strokePath);
 
-      final strokePath = Path();
-      double strokeLength = 0;
-      if (points.length > 1) {
-        strokePath.moveTo(points[0].dx, points[0].dy);
-        for (var point in points) {
-          strokePath.lineTo(point.dx, point.dy);
-        }
-
-        strokeLength = strokePath.computeMetrics().first.length;
-      }
-
-      // Check whether the drawn stroke is correct
+      // The x and y coordinates of the start and end point of the stroke have
+      // to be within the margin around the start and end points of the median
       double startEndMargin = 150;
+
+      // The stroke length has to be within the lengthRange * medianLength
       List<double> lengthRange = [0.5, 1.5];
 
       // Be more lenient on short strokes
@@ -388,53 +406,40 @@ class StrokeOrderAnimationController extends ChangeNotifier {
         startEndMargin = 200;
       }
 
-      if ( // Check length of stroke
-          strokeLength > lengthRange[0] * medianLength &&
-              strokeLength < lengthRange[1] * medianLength &&
-              // Check start and end position of stroke
-              points.first.dx > currentMedian.first[0] - startEndMargin &&
-              points.first.dx < currentMedian.first[0] + startEndMargin &&
-              points.first.dy > currentMedian.first[1] - startEndMargin &&
-              points.first.dy < currentMedian.first[1] + startEndMargin &&
-              points.last.dx > currentMedian.last[0] - startEndMargin &&
-              points.last.dx < currentMedian.last[0] + startEndMargin &&
-              points.last.dy > currentMedian.last[1] - startEndMargin &&
-              points.last.dy < currentMedian.last[1] + startEndMargin &&
-              // Check that the stroke has the right direction
-              ((distance2D(
-                          [points.first.dx, points.first.dy],
-                          currentMedian.first
-                              .map((e) => e.toDouble())
-                              .toList()) <
-                      distance2D(
-                          [points.last.dx, points.last.dy],
-                          currentMedian.first
-                              .map((e) => e.toDouble())
-                              .toList())) ||
-                  (distance2D([
-                        points.last.dx,
-                        points.last.dy
-                      ], currentMedian.last.map((e) => e.toDouble()).toList()) <
-                      distance2D(
-                          [points.first.dx, points.first.dy],
-                          currentMedian.last
-                              .map((e) => e.toDouble())
-                              .toList())))) {
+      lengthRange =
+          lengthRange.map((e) => e.toDouble() * medianLength).toList();
+
+      if (strokeLengthWithinBounds(strokeLength, lengthRange) &&
+          strokeStartIsWithinMargin(points, currentMedian, startEndMargin) &&
+          strokeEndIsWithinMargin(points, currentMedian, startEndMargin) &&
+          strokeHasRightDirection(points, currentMedian)) {
         strokeIsCorrect = true;
       }
 
       if (_isQuizzing && currentStroke < nStrokes) {
         if (strokeIsCorrect) {
+          for (var callback in _onCorrectStrokeCallbacks) {
+            callback(currentStroke);
+          }
+
           _setCurrentStroke(currentStroke + 1);
 
           if (currentStroke == nStrokes) {
             stopQuiz();
+            for (var callback in _onQuizCompleteCallbacks) {
+              callback(summary);
+            }
           }
 
           notifyListeners();
         } else {
-          _badTriesThisStroke += 1;
-          if (_badTriesThisStroke >= hintAfterStrokes) {
+          summary.mistakes[currentStroke] += 1;
+          for (var callback in _onWrongStrokeCallbacks) {
+            callback(currentStroke);
+          }
+
+          if (summary.mistakes[currentStroke] >= hintAfterStrokes &&
+              !(debugSemanticsDisableAnimations ?? false)) {
             _hintAnimationController.reset();
             _hintAnimationController.forward();
           }
@@ -443,9 +448,75 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     }
   }
 
+  bool strokeHasRightDirection(
+      List<Offset> points, List<Offset> currentMedian) {
+    return ((distance2D(points.first, currentMedian.first) <
+            distance2D(points.last, currentMedian.first)) ||
+        (distance2D(points.last, currentMedian.last) <
+            distance2D(points.first, currentMedian.last)));
+  }
+
+  bool strokeStartIsWithinMargin(
+      List<Offset> points, List<Offset> currentMedian, double startEndMargin) {
+    final strokeStartWithinMargin =
+        points.first.dx > currentMedian.first.dx - startEndMargin &&
+            points.first.dx < currentMedian.first.dx + startEndMargin &&
+            points.first.dy > currentMedian.first.dy - startEndMargin &&
+            points.first.dy < currentMedian.first.dy + startEndMargin;
+    return strokeStartWithinMargin;
+  }
+
+  bool strokeEndIsWithinMargin(
+      List<Offset> points, List<Offset> currentMedian, double startEndMargin) {
+    final strokeEndWithinMargin =
+        points.last.dx > currentMedian.last.dx - startEndMargin &&
+            points.last.dx < currentMedian.last.dx + startEndMargin &&
+            points.last.dy > currentMedian.last.dy - startEndMargin &&
+            points.last.dy < currentMedian.last.dy + startEndMargin;
+    return strokeEndWithinMargin;
+  }
+
+  bool strokeLengthWithinBounds(double strokeLength, List<double> lengthRange) {
+    return strokeLength > lengthRange[0] && strokeLength < lengthRange[1];
+  }
+
+  double getPathLength(Path path) {
+    double pathLength = 0;
+    final pathMetrics = path.computeMetrics().toList();
+
+    if (pathMetrics.isNotEmpty) {
+      pathLength = pathMetrics.first.length;
+    }
+    return pathLength;
+  }
+
+  Path convertOffsetsToPath(List<Offset> points) {
+    final path = Path();
+
+    if (points.length > 1) {
+      path.moveTo(points[0].dx.toDouble(), points[0].dy.toDouble());
+      for (var point in points) {
+        path.lineTo(point.dx.toDouble(), point.dy.toDouble());
+      }
+    }
+
+    return path;
+  }
+
+  List<Offset> getNonNullPointsFrom(List<Offset> rawPoints) {
+    List<Offset> points = [];
+
+    for (var point in rawPoints) {
+      if (point != null) {
+        points.add(point);
+      }
+    }
+
+    return points;
+  }
+
   void _setCurrentStroke(int value) {
     _currentStroke = value;
-    _badTriesThisStroke = 0;
 
     // Normalize the animation speed to the length of the stroke
     // The first stroke of 你 (length 520) is taken as reference
@@ -454,10 +525,9 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 
       final medianPath = Path();
       if (currentMedian.length > 1) {
-        medianPath.moveTo(
-            currentMedian[0][0].toDouble(), currentMedian[0][1].toDouble());
+        medianPath.moveTo(currentMedian[0].dx, currentMedian[0].dy);
         for (var point in currentMedian) {
-          medianPath.lineTo(point[0].toDouble(), point[1].toDouble());
+          medianPath.lineTo(point.dx, point.dy);
         }
       }
 
@@ -471,5 +541,24 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     }
 
     notifyListeners();
+  }
+}
+
+class QuizSummary {
+  int _nStrokes;
+  int get nStrokes => _nStrokes;
+
+  List<int> mistakes;
+
+  int get nTotalMistakes =>
+      mistakes.fold(0, (previous, current) => previous + current);
+
+  QuizSummary(int nStrokes) {
+    _nStrokes = nStrokes;
+    reset();
+  }
+
+  void reset() {
+    mistakes = List.generate(nStrokes, (index) => 0);
   }
 }

@@ -4,10 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:stroke_order_animator/strokeOrderAnimator.dart';
 
 void main() {
-  final point1 = [0.0, 0.0];
-  final point2 = [1.0, 1.0];
-  final point3 = [-1.0, -1.0];
-  final point4 = [-1.0, 1.0];
+  final point1 = Offset(0.0, 0.0);
+  final point2 = Offset(1.0, 1.0);
+  final point3 = Offset(-1.0, -1.0);
+  final point4 = Offset(-1.0, 1.0);
 
   test("Test 2D distance", () {
     expect(distance2D(point1, point1), 0);
