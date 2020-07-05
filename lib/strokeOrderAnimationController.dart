@@ -379,72 +379,100 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     _nStrokes = _strokes.length;
   }
 
-  void checkStroke(List<Offset> rawPoints) {
-    bool strokeIsCorrect = false;
+  void checkStroke(List<Offset> rawStroke) {
+    List<Offset> stroke = getNonNullPointsFrom(rawStroke);
+    final strokeLength = getLength(stroke);
 
-    List<Offset> points = getNonNullPointsFrom(rawPoints);
-    final strokePath = convertOffsetsToPath(points);
-    final strokeLength = getPathLength(strokePath);
+    if (isQuizzing && currentStroke < nStrokes && strokeLength > 0) {
+      if (strokeIsCorrect(strokeLength, stroke)) {
+        notifyCorrectStrokeCallbacks();
+        _setCurrentStroke(currentStroke + 1);
 
-    if (currentStroke < nStrokes && strokeLength > 0) {
-      final currentMedian = medians[currentStroke];
+        if (currentStroke == nStrokes) {
+          stopQuiz();
+          notifyQuizCompleteCallbacks();
+        }
+      } else {
+        summary.mistakes[currentStroke] += 1;
+        notifyWrongStrokeCallbacks();
 
-      final medianPath = convertOffsetsToPath(currentMedian);
-      final medianLength = getPathLength(medianPath);
-
-      // The x and y coordinates of the start and end point of the stroke have
-      // to be within the margin around the start and end points of the median
-      double startEndMargin = 150;
-
-      // The stroke length has to be within the lengthRange * medianLength
-      List<double> lengthRange = [0.5, 1.5];
-
-      // Be more lenient on short strokes
-      if (medianLength < 150) {
-        lengthRange = [0.2, 3];
-        startEndMargin = 200;
-      }
-
-      lengthRange =
-          lengthRange.map((e) => e.toDouble() * medianLength).toList();
-
-      if (strokeLengthWithinBounds(strokeLength, lengthRange) &&
-          strokeStartIsWithinMargin(points, currentMedian, startEndMargin) &&
-          strokeEndIsWithinMargin(points, currentMedian, startEndMargin) &&
-          strokeHasRightDirection(points, currentMedian)) {
-        strokeIsCorrect = true;
-      }
-
-      if (_isQuizzing && currentStroke < nStrokes) {
-        if (strokeIsCorrect) {
-          for (var callback in _onCorrectStrokeCallbacks) {
-            callback(currentStroke);
-          }
-
-          _setCurrentStroke(currentStroke + 1);
-
-          if (currentStroke == nStrokes) {
-            stopQuiz();
-            for (var callback in _onQuizCompleteCallbacks) {
-              callback(summary);
-            }
-          }
-
-          notifyListeners();
-        } else {
-          summary.mistakes[currentStroke] += 1;
-          for (var callback in _onWrongStrokeCallbacks) {
-            callback(currentStroke);
-          }
-
-          if (summary.mistakes[currentStroke] >= hintAfterStrokes &&
-              !(debugSemanticsDisableAnimations ?? false)) {
-            _hintAnimationController.reset();
-            _hintAnimationController.forward();
-          }
+        if (summary.mistakes[currentStroke] >= hintAfterStrokes) {
+          animateHint();
         }
       }
+
+      notifyListeners();
     }
+  }
+
+  bool strokeIsCorrect(double strokeLength, List<Offset> stroke) {
+    final median = medians[currentStroke];
+    final medianLength = getLength(median);
+
+    List<double> allowedLengthRange = getAllowedLengthRange(medianLength);
+    double startEndMargin = getStartEndMargin(medianLength);
+
+    bool isCorrect = false;
+
+    if (strokeLengthWithinBounds(strokeLength, allowedLengthRange) &&
+        strokeStartIsWithinMargin(stroke, median, startEndMargin) &&
+        strokeEndIsWithinMargin(stroke, median, startEndMargin) &&
+        strokeHasRightDirection(stroke, median)) {
+      isCorrect = true;
+    }
+    return isCorrect;
+  }
+
+  void animateHint() {
+    if (!(debugSemanticsDisableAnimations ?? false)) {
+      _hintAnimationController.reset();
+      _hintAnimationController.forward();
+    }
+  }
+
+  void notifyWrongStrokeCallbacks() {
+    for (var callback in _onWrongStrokeCallbacks) {
+      callback(currentStroke);
+    }
+  }
+
+  void notifyQuizCompleteCallbacks() {
+    for (var callback in _onQuizCompleteCallbacks) {
+      callback(summary);
+    }
+  }
+
+  void notifyCorrectStrokeCallbacks() {
+    for (var callback in _onCorrectStrokeCallbacks) {
+      callback(currentStroke);
+    }
+  }
+
+  double getStartEndMargin(double medianLength) {
+    double startEndMargin;
+
+    // Be more lenient on short strokes
+    if (medianLength < 150) {
+      startEndMargin = 200;
+    } else {
+      startEndMargin = 150;
+    }
+    return startEndMargin;
+  }
+
+  List<double> getAllowedLengthRange(double medianLength) {
+    List<double> lengthRange;
+
+    // Be more lenient on short strokes
+    if (medianLength < 150) {
+      lengthRange = [0.2, 3];
+    } else {
+      lengthRange = [0.5, 1.5];
+    }
+
+    lengthRange = lengthRange.map((e) => e.toDouble() * medianLength).toList();
+
+    return lengthRange;
   }
 
   bool strokeHasRightDirection(
@@ -479,8 +507,10 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     return strokeLength > lengthRange[0] && strokeLength < lengthRange[1];
   }
 
-  double getPathLength(Path path) {
+  double getLength(List<Offset> points) {
     double pathLength = 0;
+
+    final path = convertOffsetsToPath(points);
     final pathMetrics = path.computeMetrics().toList();
 
     if (pathMetrics.isNotEmpty) {
