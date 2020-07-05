@@ -158,6 +158,18 @@ void main() {
         controller.startQuiz();
         expect(controller.summary.nTotalMistakes, 0);
       });
+
+      test('Empty stroke does not count as mistake', () {
+        controller.reset();
+        controller.checkStroke([]);
+        expect(controller.summary.nTotalMistakes, 0);
+      });
+
+      test('Stroke of length 0 does not count as mistake', () {
+        controller.reset();
+        controller.checkStroke([Offset(0, 0), Offset(0, 0)]);
+        expect(controller.summary.nTotalMistakes, 0);
+      });
     });
 
     group('Callbacks', () {
