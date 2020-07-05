@@ -382,16 +382,15 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   void checkStroke(List<Offset> rawPoints) {
     bool strokeIsCorrect = false;
 
-    if (currentStroke < nStrokes) {
-      List<Offset> points = getNonNullPointsFrom(rawPoints);
+    List<Offset> points = getNonNullPointsFrom(rawPoints);
+    final strokePath = convertOffsetsToPath(points);
+    final strokeLength = getPathLength(strokePath);
 
+    if (currentStroke < nStrokes && strokeLength > 0) {
       final currentMedian = medians[currentStroke];
 
       final medianPath = convertOffsetsToPath(currentMedian);
       final medianLength = getPathLength(medianPath);
-
-      final strokePath = convertOffsetsToPath(points);
-      final strokeLength = getPathLength(strokePath);
 
       // The x and y coordinates of the start and end point of the stroke have
       // to be within the margin around the start and end points of the median
