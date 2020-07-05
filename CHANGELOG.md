@@ -1,3 +1,7 @@
+## Version 1.5.1
+
+* Tapping during a quiz does not count as a mistake anymore
+
 ## Version 1.5.0
 
 * Added callbacks for quiz completion and wrong and correct strokes during quizzes
