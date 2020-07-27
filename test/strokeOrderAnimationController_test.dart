@@ -163,6 +163,43 @@ void main() {
         controller.checkStroke([Offset(0, 0), Offset(0, 0)]);
         expect(controller.summary.nTotalMistakes, 0);
       });
+
+      group('Correct stroke paths get saved', () {
+        test(
+            'Summary has a list of stroke paths with length == number of strokes',
+            () {
+          controller.reset();
+          expect(controller.summary.correctStrokePaths.length,
+              controller.summary.nStrokes);
+        });
+
+        test('Every path is a list of Offsets', () {
+          controller.reset();
+          expect(
+              controller.summary.correctStrokePaths[0] is List<Offset>, true);
+        });
+
+        test('Correct stroke gets added to the list', () {
+          controller.reset();
+          controller.checkStroke([Offset(430, 80), Offset(540, 160)]);
+          expect(controller.summary.correctStrokePaths[0].length > 0, true);
+          expect(controller.summary.correctStrokePaths[0],
+              [Offset(430, 80), Offset(540, 160)]);
+        });
+
+        test('Incorrect stroke does not get added to the list', () {
+          controller.reset();
+          controller.checkStroke([Offset(0, 0), Offset(0, 1)]);
+          expect(controller.summary.correctStrokePaths[0].length, 0);
+        });
+
+        test('Reset resets saved stroke paths', () {
+          controller.reset();
+          controller.checkStroke([Offset(430, 80), Offset(540, 160)]);
+          controller.reset();
+          expect(controller.summary.correctStrokePaths[0].length, 0);
+        });
+      });
     });
 
     group('Callbacks', () {

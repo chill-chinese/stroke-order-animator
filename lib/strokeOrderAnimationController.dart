@@ -386,6 +386,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     if (isQuizzing && currentStroke < nStrokes && strokeLength > 0) {
       if (strokeIsCorrect(strokeLength, stroke)) {
         notifyCorrectStrokeCallbacks();
+        _summary.correctStrokePaths[currentStroke] = stroke;
         _setCurrentStroke(currentStroke + 1);
 
         if (currentStroke == nStrokes) {
@@ -576,6 +577,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 class QuizSummary {
   int _nStrokes;
   int get nStrokes => _nStrokes;
+  List<List<Offset>> correctStrokePaths;
 
   List<int> mistakes;
 
@@ -584,10 +586,12 @@ class QuizSummary {
 
   QuizSummary(int nStrokes) {
     _nStrokes = nStrokes;
+    correctStrokePaths = List.generate(nStrokes, (index) => []);
     reset();
   }
 
   void reset() {
     mistakes = List.generate(nStrokes, (index) => 0);
+    correctStrokePaths = List.generate(nStrokes, (index) => []);
   }
 }
