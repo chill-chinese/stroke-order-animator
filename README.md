@@ -17,6 +17,7 @@ All attributes and actions of the stroke order diagram are controlled via the `S
 * Whether to show/hide strokes
 * Whether to show/hide outlines
 * Whether to show/hide medians
+* Whether to show/hide the correct strokes the user writes during a quiz
 * Whether to highlight radicals
 * Stroke color
 * Outline color
@@ -42,7 +43,7 @@ To better integrate the quizzes, three callbacks can be either passed to the `St
 * onCorrectStrokeCallback
 * onQuizCompleteCallback
 
-The `onQuizCompleteCallback` receives a `Quizsummary` containing the number of mistakes on a per-stroke basis. There other two callbacks receive the index of the stroke that was written (in-)correctly. All indices are zero-based.
+The `onQuizCompleteCallback` receives a `Quizsummary` containing the number of mistakes on a per-stroke basis and the paths of the correct strokes (in a 1024x1024 coordinate system). The other two callbacks receive the index of the stroke that was written (in-)correctly. All indices are zero-based.
 
 ## Example
 

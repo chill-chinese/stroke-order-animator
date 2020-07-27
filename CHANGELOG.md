@@ -1,3 +1,7 @@
+## Version 1.6.0
+
+* Added an option to display the correct strokes a user writes during a quiz
+
 ## Version 1.5.1
 
 * Tapping during a quiz does not count as a mistake anymore
