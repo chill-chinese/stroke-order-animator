@@ -95,6 +95,11 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
             );
           }),
           if (widget._controller.isQuizzing)
+            ...paintCorrectStrokes(
+                widget._controller.summary.correctStrokePaths,
+                brushColor: widget._controller.brushColor,
+                brushWidth: widget._controller.brushWidth),
+          if (widget._controller.isQuizzing)
             Container(
               child: CustomPaint(
                 painter: Brush(points,
@@ -105,6 +110,29 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
         ],
       ),
     );
+  }
+
+  List<Container> paintCorrectStrokes(List<List<Offset>> correctStrokePaths,
+      {Color brushColor: Colors.black, double brushWidth: 8}) {
+    final List<Container> brushStrokes = [];
+
+    for (var strokePath in correctStrokePaths) {
+      if (strokePath.isNotEmpty) {
+        brushStrokes.add(
+          Container(
+            child: CustomPaint(
+              painter: Brush(
+                strokePath,
+                brushColor: brushColor,
+                brushWidth: brushWidth,
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
+    return brushStrokes;
   }
 }
 
@@ -143,8 +171,10 @@ class StrokePainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     if (strokeStart < 0) {
       // Calculate the points on strokeOutlinePath that are closest to the start and end points of the median
-      strokeStart = getClosestPointOnPathAsDistanceOnPath(strokeOutlinePath, median.first);
-      strokeEnd = getClosestPointOnPathAsDistanceOnPath(strokeOutlinePath, median.last);
+      strokeStart = getClosestPointOnPathAsDistanceOnPath(
+          strokeOutlinePath, median.first);
+      strokeEnd =
+          getClosestPointOnPathAsDistanceOnPath(strokeOutlinePath, median.last);
     }
 
     var strokePaint = Paint()
@@ -155,8 +185,8 @@ class StrokePainter extends CustomPainter {
       if (strokeStart >= 0 && strokeEnd >= 0) {
         // Split the original path into two paths that follow the outline
         // of the stroke from strokeStart to strokeEnd clockwise and counter-clockwise
-        List<Path> contourPaths = extractContourPaths(
-            strokeOutlinePath, strokeStart, strokeEnd);
+        List<Path> contourPaths =
+            extractContourPaths(strokeOutlinePath, strokeStart, strokeEnd);
 
         // Go on the first contourPath first, then jump over to the second path and go back to the start
         final lenFirstPath = contourPaths.first.computeMetrics().first.length;
@@ -249,8 +279,7 @@ double getClosestPointOnPathAsDistanceOnPath(Path path, Offset queryPoint) {
   // Find the point on the path closest to the query
   for (var iPoint = 0; iPoint < pointsOnPath.length; iPoint++) {
     final point = pointsOnPath[iPoint];
-    final distance =
-        distance2D(point, queryPoint);
+    final distance = distance2D(point, queryPoint);
     if (distance < minDistance) {
       minDistance = distance;
       closestPoint = iPoint * stepSize;
