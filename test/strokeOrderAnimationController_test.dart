@@ -62,10 +62,6 @@ void main() {
     final controller =
         StrokeOrderAnimationController(strokeOrders[0], tickerProvider);
 
-    final wrongStroke0 = [Offset(0, 0), Offset(10, 10)];
-    final correctStroke0 = [Offset(430, 80), Offset(540, 160)];
-    final inverseStroke0 = [Offset(540, 160), Offset(430, 80)];
-
     final controller2 =
         StrokeOrderAnimationController(strokeOrders[1], tickerProvider);
 
@@ -85,19 +81,19 @@ void main() {
       });
 
       test('Correct stroke gets accepted', () {
-        controller.checkStroke(correctStroke0);
+        controller.checkStroke(correctStroke00);
         expect(controller.currentStroke, 1);
       });
 
       test('Wrong stroke does not get accepted', () {
         controller.reset();
-        controller.checkStroke(wrongStroke0);
+        controller.checkStroke(wrongStroke00);
         expect(controller.currentStroke, 0);
       });
 
       test('Inverse stroke does not get accepted', () {
         controller.reset();
-        controller.checkStroke(inverseStroke0);
+        controller.checkStroke(inverseStroke00);
         expect(controller.currentStroke, 0);
       });
     });
@@ -117,14 +113,14 @@ void main() {
 
       test('Wrong stroke increases number of total mistakes', () {
         controller.reset();
-        controller.checkStroke(wrongStroke0);
+        controller.checkStroke(wrongStroke00);
         expect(controller.summary.nTotalMistakes, 1);
-        controller.checkStroke(wrongStroke0);
+        controller.checkStroke(wrongStroke00);
         expect(controller.summary.nTotalMistakes, 2);
       });
 
       test('Reset resets number of single and total mistakes', () {
-        controller.checkStroke(wrongStroke0);
+        controller.checkStroke(wrongStroke00);
         controller.reset();
         expect(controller.summary.nTotalMistakes, 0);
         for (var nMistakes in controller.summary.mistakes) {
@@ -134,19 +130,19 @@ void main() {
 
       test('Mistakes get counted separately for each stroke', () {
         controller.reset();
-        controller.checkStroke(wrongStroke0);
+        controller.checkStroke(wrongStroke00);
         expect(controller.summary.mistakes[0], 1);
 
-        controller.checkStroke(correctStroke0);
-        controller.checkStroke(wrongStroke0);
-        controller.checkStroke(wrongStroke0);
+        controller.checkStroke(correctStroke00);
+        controller.checkStroke(wrongStroke00);
+        controller.checkStroke(wrongStroke00);
         expect(controller.summary.mistakes[0], 1);
         expect(controller.summary.mistakes[1], 2);
       });
 
       test('Summary gets reset when quiz starts', () {
         controller.reset();
-        controller.checkStroke(wrongStroke0);
+        controller.checkStroke(wrongStroke00);
         controller.stopQuiz();
         controller.startQuiz();
         expect(controller.summary.nTotalMistakes, 0);
@@ -181,21 +177,20 @@ void main() {
 
         test('Correct stroke gets added to the list', () {
           controller.reset();
-          controller.checkStroke([Offset(430, 80), Offset(540, 160)]);
+          controller.checkStroke(correctStroke00);
           expect(controller.summary.correctStrokePaths[0].length > 0, true);
-          expect(controller.summary.correctStrokePaths[0],
-              [Offset(430, 80), Offset(540, 160)]);
+          expect(controller.summary.correctStrokePaths[0], correctStroke00);
         });
 
         test('Incorrect stroke does not get added to the list', () {
           controller.reset();
-          controller.checkStroke([Offset(0, 0), Offset(0, 1)]);
+          controller.checkStroke(wrongStroke00);
           expect(controller.summary.correctStrokePaths[0].length, 0);
         });
 
         test('Reset resets saved stroke paths', () {
           controller.reset();
-          controller.checkStroke([Offset(430, 80), Offset(540, 160)]);
+          controller.checkStroke(correctStroke00);
           controller.reset();
           expect(controller.summary.correctStrokePaths[0].length, 0);
         });
@@ -205,10 +200,6 @@ void main() {
     group('Callbacks', () {
       final controller =
           StrokeOrderAnimationController(strokeOrders[5], tickerProvider);
-
-      final correctStroke0 = [Offset(316, 245), Offset(722, 208)];
-      final correctStroke1 = [Offset(331, 493), Offset(700, 468)];
-      final correctStroke2 = [Offset(127, 748), Offset(955, 726)];
 
       QuizSummary summary1;
       int nCalledOnQuizComplete1 = 0;
@@ -223,9 +214,9 @@ void main() {
       test('Summary gets passed to callback when quiz finishes', () {
         nCalledOnQuizComplete1 = 0;
         controller.startQuiz();
-        controller.checkStroke(correctStroke0);
-        controller.checkStroke(correctStroke1);
-        controller.checkStroke(correctStroke2);
+        controller.checkStroke(correctStroke50);
+        controller.checkStroke(correctStroke51);
+        controller.checkStroke(correctStroke52);
         expect(nCalledOnQuizComplete1, 1);
       });
 
@@ -233,12 +224,12 @@ void main() {
           () {
         controller.startQuiz();
         controller.reset();
-        controller.checkStroke(correctStroke0);
-        controller.checkStroke(wrongStroke0);
-        controller.checkStroke(wrongStroke0);
-        controller.checkStroke(correctStroke1);
-        controller.checkStroke(wrongStroke0);
-        controller.checkStroke(correctStroke2);
+        controller.checkStroke(correctStroke50);
+        controller.checkStroke(wrongStroke00);
+        controller.checkStroke(wrongStroke00);
+        controller.checkStroke(correctStroke51);
+        controller.checkStroke(wrongStroke00);
+        controller.checkStroke(correctStroke52);
         expect(summary1.nTotalMistakes, 3);
         expect(summary1.mistakes[0], 0);
         expect(summary1.mistakes[1], 2);
@@ -257,12 +248,12 @@ void main() {
         controller.addOnQuizCompleteCallback(onQuizComplete2);
 
         controller.startQuiz();
-        controller.checkStroke(correctStroke0);
-        controller.checkStroke(wrongStroke0);
-        controller.checkStroke(wrongStroke0);
-        controller.checkStroke(correctStroke1);
-        controller.checkStroke(wrongStroke0);
-        controller.checkStroke(correctStroke2);
+        controller.checkStroke(correctStroke50);
+        controller.checkStroke(wrongStroke00);
+        controller.checkStroke(wrongStroke00);
+        controller.checkStroke(correctStroke51);
+        controller.checkStroke(wrongStroke00);
+        controller.checkStroke(correctStroke52);
 
         expect(nCalledOnQuizComplete2, 1);
         expect(summary1.nTotalMistakes, summary2.nTotalMistakes);
@@ -283,10 +274,10 @@ void main() {
 
         controller.startQuiz();
         controller.reset();
-        controller.checkStroke(wrongStroke0);
+        controller.checkStroke(wrongStroke00);
         expect(wrongStroke, 0);
-        controller.checkStroke(correctStroke0);
-        controller.checkStroke(wrongStroke0);
+        controller.checkStroke(correctStroke50);
+        controller.checkStroke(wrongStroke00);
         expect(wrongStroke, 1);
       });
 
@@ -303,9 +294,9 @@ void main() {
 
         controller.startQuiz();
         controller.reset();
-        controller.checkStroke(correctStroke0);
+        controller.checkStroke(correctStroke50);
         expect(correctStroke, 0);
-        controller.checkStroke(correctStroke1);
+        controller.checkStroke(correctStroke51);
         expect(correctStroke, 1);
       });
     });

@@ -48,11 +48,13 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   bool _showStroke;
   bool _showOutline;
   bool _showMedian;
+  bool _showUserStroke;
   bool _highlightRadical;
 
   bool get showStroke => _showStroke;
   bool get showOutline => _showOutline;
   bool get showMedian => _showMedian;
+  bool get showUserStroke => _showUserStroke;
   bool get highlightRadical => _highlightRadical;
 
   Color _strokeColor;
@@ -83,6 +85,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     bool showStroke: true,
     bool showOutline: true,
     bool showMedian: false,
+    bool showUserStroke: false,
     bool highlightRadical: false,
     Color strokeColor: Colors.blue,
     Color outlineColor: Colors.black,
@@ -118,6 +121,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     setShowStroke(showStroke);
     setShowOutline(showOutline);
     setShowMedian(showMedian);
+    setShowUserStroke(showUserStroke);
     setHighlightRadical(highlightRadical);
     setStrokeColor(strokeColor);
     setOutlineColor(outlineColor);
@@ -263,6 +267,11 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 
   void setShowStroke(bool value) {
     _showStroke = value;
+    notifyListeners();
+  }
+
+  void setShowUserStroke(bool value) {
+    _showUserStroke = value;
     notifyListeners();
   }
 

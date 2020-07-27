@@ -199,6 +199,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                           ? Text("Unhighlight radical")
                           : Text("Highlight radical"),
                     ),
+                    MaterialButton(
+                      onPressed: () {
+                        controller
+                            .setShowUserStroke(!controller.showUserStroke);
+                      },
+                      child: controller.showUserStroke
+                          ? Text("Hide user strokes")
+                          : Text("Show user strokes"),
+                    ),
                   ],
                 ),
               ),

@@ -94,7 +94,7 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
                       median: widget._controller.medians[index])),
             );
           }),
-          if (widget._controller.isQuizzing)
+          if (widget._controller.showUserStroke)
             ...paintCorrectStrokes(
                 widget._controller.summary.correctStrokePaths,
                 brushColor: widget._controller.brushColor,
