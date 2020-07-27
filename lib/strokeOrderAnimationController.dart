@@ -48,11 +48,13 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   bool _showStroke;
   bool _showOutline;
   bool _showMedian;
+  bool _showUserStroke;
   bool _highlightRadical;
 
   bool get showStroke => _showStroke;
   bool get showOutline => _showOutline;
   bool get showMedian => _showMedian;
+  bool get showUserStroke => _showUserStroke;
   bool get highlightRadical => _highlightRadical;
 
   Color _strokeColor;
@@ -83,6 +85,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     bool showStroke: true,
     bool showOutline: true,
     bool showMedian: false,
+    bool showUserStroke: false,
     bool highlightRadical: false,
     Color strokeColor: Colors.blue,
     Color outlineColor: Colors.black,
@@ -118,6 +121,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     setShowStroke(showStroke);
     setShowOutline(showOutline);
     setShowMedian(showMedian);
+    setShowUserStroke(showUserStroke);
     setHighlightRadical(highlightRadical);
     setStrokeColor(strokeColor);
     setOutlineColor(outlineColor);
@@ -266,6 +270,11 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setShowUserStroke(bool value) {
+    _showUserStroke = value;
+    notifyListeners();
+  }
+
   void setShowOutline(bool value) {
     _showOutline = value;
     notifyListeners();
@@ -386,6 +395,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     if (isQuizzing && currentStroke < nStrokes && strokeLength > 0) {
       if (strokeIsCorrect(strokeLength, stroke)) {
         notifyCorrectStrokeCallbacks();
+        _summary.correctStrokePaths[currentStroke] = stroke;
         _setCurrentStroke(currentStroke + 1);
 
         if (currentStroke == nStrokes) {
@@ -576,6 +586,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 class QuizSummary {
   int _nStrokes;
   int get nStrokes => _nStrokes;
+  List<List<Offset>> correctStrokePaths;
 
   List<int> mistakes;
 
@@ -584,10 +595,12 @@ class QuizSummary {
 
   QuizSummary(int nStrokes) {
     _nStrokes = nStrokes;
+    correctStrokePaths = List.generate(nStrokes, (index) => []);
     reset();
   }
 
   void reset() {
     mistakes = List.generate(nStrokes, (index) => 0);
+    correctStrokePaths = List.generate(nStrokes, (index) => []);
   }
 }
