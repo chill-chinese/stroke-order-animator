@@ -22,6 +22,19 @@ void main() {
     expect(controllers[3].nStrokes, 3);
     expect(controllers[4].nStrokes, 8);
     expect(controllers[5].nStrokes, 3);
+
+    controllers[0].setStrokeOrder(strokeOrders[1]);
+    controllers[1].setStrokeOrder(strokeOrders[2]);
+    controllers[2].setStrokeOrder(strokeOrders[3]);
+    controllers[3].setStrokeOrder(strokeOrders[4]);
+    controllers[4].setStrokeOrder(strokeOrders[5]);
+    controllers[5].setStrokeOrder(strokeOrders[0]);
+    expect(controllers[0].nStrokes, 7);
+    expect(controllers[1].nStrokes, 10);
+    expect(controllers[2].nStrokes, 3);
+    expect(controllers[3].nStrokes, 8);
+    expect(controllers[4].nStrokes, 3);
+    expect(controllers[5].nStrokes, 5);
   });
 
   group("Test animation controls", () {

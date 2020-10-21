@@ -363,7 +363,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   }
 
   void setStrokeOrder(String strokeOrder) {
-    final parsedJson = json.decode(_strokeOrder.replaceAll("'", '"'));
+    final parsedJson = json.decode(strokeOrder.replaceAll("'", '"'));
 
     // Transformation according to the makemeahanzi documentation
     _strokes = List.generate(
