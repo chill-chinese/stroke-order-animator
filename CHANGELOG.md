@@ -1,3 +1,7 @@
+## Version 1.6.1
+
+* Fixed [a bug](https://github.com/Mr-Pepe/stroke-order-animator/issues/17) that prevented setting a new character for an existing controller
+
 ## Version 1.6.0
 
 * Added an option to display the correct strokes a user writes during a quiz
