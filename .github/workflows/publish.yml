@@ -1,8 +1,5 @@
 name: Test package and publish to pub.dev
 on:
-  pull_request:
-    branches:
-      - master
   push:
     branches:
       - master
