@@ -9,29 +9,14 @@ void main() {
   final tickerProvider = TestVSync();
   debugSemanticsDisableAnimations = true;
 
-  test("Test stroke count", () {
+  group('Test stroke count and stroke order ', () {
     final controllers = List.generate(
       strokeOrders.length,
       (index) =>
           StrokeOrderAnimationController(strokeOrders[index], tickerProvider),
     );
 
-    expect(controllers[0].nStrokes, 5);
-    expect(controllers[1].nStrokes, 7);
-    expect(controllers[2].nStrokes, 10);
-    expect(controllers[3].nStrokes, 3);
-    expect(controllers[4].nStrokes, 8);
-    expect(controllers[5].nStrokes, 3);
-  });
-
-  group('Test nStrokes and strokeOrder ', () {
-    final controllers = List.generate(
-      strokeOrders.length,
-      (index) =>
-          StrokeOrderAnimationController(strokeOrders[index], tickerProvider),
-    );
-
-    test('Test stroke count and getter of stroke order', () {
+    test('Test stroke count and stroke order after initialization', () {
       expect(controllers[0].nStrokes, 5);
       expect(controllers[0].strokeOrder, strokeOrders[0]);
 
@@ -51,7 +36,7 @@ void main() {
       expect(controllers[5].strokeOrder, strokeOrders[5]);
     });
 
-    test('Test stroke and nStroke after set new stroke', () {
+    test('Test stroke count and stroke after setting new character', () {
       controllers[0].setStrokeOrder(strokeOrders[1]);
       expect(controllers[0].nStrokes, 7);
       expect(controllers[0].strokeOrder, strokeOrders[1]);
