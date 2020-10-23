@@ -14,6 +14,7 @@ import 'package:svg_path_parser/svg_path_parser.dart';
 /// control buttons with the animations.
 class StrokeOrderAnimationController extends ChangeNotifier {
   String _strokeOrder;
+  String get strokeOrder => _strokeOrder;
   final TickerProvider _tickerProvider;
   List<int> _radicalStrokes;
   List<int> get radicalStrokes => _radicalStrokes;
@@ -363,6 +364,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   }
 
   void setStrokeOrder(String strokeOrder) {
+    _strokeOrder = strokeOrder;
     final parsedJson = json.decode(_strokeOrder.replaceAll("'", '"'));
 
     // Transformation according to the makemeahanzi documentation
