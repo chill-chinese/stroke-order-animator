@@ -400,7 +400,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     }
 
     try {
-      tmpRadicalStrokeIndices = List<int >.generate(
+      tmpRadicalStrokeIndices = List<int>.generate(
           parsedJson['radStrokes'].length,
           (index) => parsedJson['radStrokes'][index]);
     } catch (e) {
