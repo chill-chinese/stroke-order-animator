@@ -61,6 +61,53 @@ void main() {
       expect(controllers[5].nStrokes, 5);
       expect(controllers[5].strokeOrder, strokeOrders[0]);
     });
+
+    test('Invalid JSON string throws exception', () {
+      expect(() => controllers[0].setStrokeOrder("..."), throwsFormatException);
+    });
+
+    test('Invalid strokes in JSON throw exceptions', () {
+      final invalidJSONs = [
+        // No strokes
+        "{'medians': [[[428, 824]]], 'radStrokes': [1, 2, 3, 4]}",
+        // Strokes not List of paths
+        "{'strokes': [5], 'medians': [[[428, 824]]], 'radStrokes': [1, 2, 3, 4]}",
+        // "{'strokes': ['5'],'medians': [[[0, 0]]], 'radStrokes': [0]}", // Missing strokes
+        // "{'strokes': ['5'], 'medians': [], 'radStrokes': [0]}"
+      ];
+
+      for (var invalidJSON in invalidJSONs) {
+        expect(() => controllers[0].setStrokeOrder(invalidJSON),
+            throwsFormatException);
+      }
+    });
+
+    test('Invalid medians in JSON throw exceptions', () {
+      final invalidJSONs = [
+        // No medians
+        "{'strokes': ['M 440 788 Q 497 731 535 718 Q 553 717 562 732 Q 569 748 564 767 Q 546 815 477 828 Q 438 841 421 834 Q 414 831 418 817 Q 421 804 440 788 Z'], 'radStrokes': [1, 2, 3, 4]}",
+        // Medians not list of list of offsets
+        "{'strokes': ['M 440 788 Q 497 731 535 718 Q 553 717 562 732 Q 569 748 564 767 Q 546 815 477 828 Q 438 841 421 834 Q 414 831 418 817 Q 421 804 440 788 Z'], 'medians': [[[428]]], 'radStrokes': [1, 2, 3, 4]}",
+      ];
+
+      for (var invalidJSON in invalidJSONs) {
+        expect(() => controllers[0].setStrokeOrder(invalidJSON),
+            throwsFormatException);
+      }
+    });
+
+    test('Unequal number of strokes and medians throws exception', () {
+      expect(
+          () => controllers[0].setStrokeOrder(
+              "{'strokes': ['M 440 788 Q 497 731 535 718 Q 553 717 562 732 Q 569 748 564 767 Q 546 815 477 828 Q 438 841 421 834 Q 414 831 418 817 Q 421 804 440 788 Z'], 'medians': [[[428, 824]], [[1, 2]]], 'radStrokes': [1, 2, 3, 4]}"),
+          throwsFormatException);
+    });
+
+    test('Invalid radical stroke indices leads to empty list', () {
+      controllers[0].setStrokeOrder(
+          "{'strokes': ['M 440 788 Q 497 731 535 718 Q 553 717 562 732 Q 569 748 564 767 Q 546 815 477 828 Q 438 841 421 834 Q 414 831 418 817 Q 421 804 440 788 Z'], 'medians': [[[428, 824], [1, 2]]], 'radStrokes': ['12', 3, 4]}");
+      expect(controllers[0].radicalStrokes, equals([]));
+    });
   });
 
   group("Test animation controls", () {

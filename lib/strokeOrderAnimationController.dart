@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:stroke_order_animator/strokeOrderAnimator.dart';
 import 'package:svg_path_parser/svg_path_parser.dart';
@@ -15,17 +14,17 @@ import 'package:svg_path_parser/svg_path_parser.dart';
 class StrokeOrderAnimationController extends ChangeNotifier {
   String _strokeOrder;
   String get strokeOrder => _strokeOrder;
-  final TickerProvider _tickerProvider;
-  List<int> _radicalStrokes;
-  List<int> get radicalStrokes => _radicalStrokes;
+  List<int> _radicalStrokeIndices = List.empty();
+  List<int> get radicalStrokes => _radicalStrokeIndices;
 
-  int _nStrokes;
+  int _nStrokes = 0;
   int get nStrokes => _nStrokes;
   int _currentStroke = 0;
   int get currentStroke => _currentStroke;
-  List<Path> _strokes;
+  List<Path> _strokes = List.empty();
   List<Path> get strokes => _strokes;
-  List<List<Offset>> medians;
+  List<List<Offset>> _medians = List.empty();
+  List<List<Offset>> get medians => _medians;
 
   AnimationController _strokeAnimationController;
   AnimationController get strokeAnimationController =>
@@ -39,7 +38,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   double _strokeAnimationSpeed = 1;
   double _hintAnimationSpeed = 3;
 
-  QuizSummary _summary;
+  QuizSummary _summary = QuizSummary(0);
   QuizSummary get summary => _summary;
 
   List<Function> _onQuizCompleteCallbacks = [];
@@ -80,7 +79,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 
   StrokeOrderAnimationController(
     this._strokeOrder,
-    this._tickerProvider, {
+    tickerProvider, {
     double strokeAnimationSpeed: 1,
     double hintAnimationSpeed: 3,
     bool showStroke: true,
@@ -99,16 +98,28 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     Function onQuizCompleteCallback,
     Function onWrongStrokeCallback,
     Function onCorrectStrokeCallback,
-  }) {
-    _strokeAnimationController = AnimationController(
-      vsync: _tickerProvider,
-    );
-
+  })  : _strokeColor = strokeColor,
+        _showStroke = showStroke,
+        _showOutline = showOutline,
+        _showMedian = showMedian,
+        _showUserStroke = showUserStroke,
+        _highlightRadical = highlightRadical,
+        _outlineColor = outlineColor,
+        _medianColor = medianColor,
+        _radicalColor = radicalColor,
+        _brushColor = brushColor,
+        _brushWidth = brushWidth,
+        _hintAfterStrokes = hintAfterStrokes,
+        _hintColor = hintColor,
+        _strokeAnimationSpeed = strokeAnimationSpeed,
+        _hintAnimationSpeed = hintAnimationSpeed,
+        _strokeAnimationController = AnimationController(
+          vsync: tickerProvider,
+        ),
+        _hintAnimationController = AnimationController(
+          vsync: tickerProvider,
+        ) {
     _strokeAnimationController.addStatusListener(_strokeCompleted);
-
-    _hintAnimationController = AnimationController(
-      vsync: _tickerProvider,
-    );
 
     _hintAnimationController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
@@ -117,35 +128,14 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     });
 
     setStrokeOrder(_strokeOrder);
-    _summary = QuizSummary(_nStrokes);
     _setCurrentStroke(0);
-    setShowStroke(showStroke);
-    setShowOutline(showOutline);
-    setShowMedian(showMedian);
-    setShowUserStroke(showUserStroke);
-    setHighlightRadical(highlightRadical);
-    setStrokeColor(strokeColor);
-    setOutlineColor(outlineColor);
-    setMedianColor(medianColor);
-    setRadicalColor(radicalColor);
-    setBrushColor(brushColor);
-    setBrushWidth(brushWidth);
-    setHintAfterStrokes(hintAfterStrokes);
-    setHintColor(hintColor);
-    setStrokeAnimationSpeed(strokeAnimationSpeed);
-    setHintAnimationSpeed(hintAnimationSpeed);
+    _summary = QuizSummary(_nStrokes);
 
-    if (onQuizCompleteCallback != null) {
-      addOnQuizCompleteCallback(onQuizCompleteCallback);
-    }
+    addOnQuizCompleteCallback(onQuizCompleteCallback);
+    addOnWrongStrokeCallback(onWrongStrokeCallback);
+    addOnCorrectStrokeCallback(onCorrectStrokeCallback);
 
-    if (onWrongStrokeCallback != null) {
-      addOnWrongStrokeCallback(onWrongStrokeCallback);
-    }
-
-    if (onCorrectStrokeCallback != null) {
-      addOnCorrectStrokeCallback(onCorrectStrokeCallback);
-    }
+    notifyListeners();
   }
 
   @override
@@ -352,42 +342,79 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   }
 
   void addOnQuizCompleteCallback(Function onQuizCompleteCallback) {
-    _onQuizCompleteCallbacks.add(onQuizCompleteCallback);
+    if (onQuizCompleteCallback != null) {
+      _onQuizCompleteCallbacks.add(onQuizCompleteCallback);
+    }
   }
 
   void addOnWrongStrokeCallback(Function onWrongStrokeCallback) {
-    _onWrongStrokeCallbacks.add(onWrongStrokeCallback);
+    if (onWrongStrokeCallback != null) {
+      _onWrongStrokeCallbacks.add(onWrongStrokeCallback);
+    }
   }
 
   void addOnCorrectStrokeCallback(Function onCorrectStrokeCallback) {
-    _onCorrectStrokeCallbacks.add(onCorrectStrokeCallback);
+    if (onCorrectStrokeCallback != null) {
+      _onCorrectStrokeCallbacks.add(onCorrectStrokeCallback);
+    }
   }
 
   void setStrokeOrder(String strokeOrder) {
-    _strokeOrder = strokeOrder;
-    final parsedJson = json.decode(_strokeOrder.replaceAll("'", '"'));
+    dynamic parsedJson;
+    List<Path> tmpStrokes;
+    List<List<Offset>> tmpMedians;
+    List<int> tmpRadicalStrokeIndices = [];
 
-    // Transformation according to the makemeahanzi documentation
-    _strokes = List.generate(
-        parsedJson['strokes'].length,
-        (index) => parseSvgPath(parsedJson['strokes'][index]).transform(
-            Matrix4(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 900, 0, 1)
-                .storage));
-
-    medians = List.generate(parsedJson['medians'].length, (iStroke) {
-      return List.generate(parsedJson['medians'][iStroke].length, (iPoint) {
-        return Offset((parsedJson['medians'][iStroke][iPoint][0]).toDouble(),
-            (parsedJson['medians'][iStroke][iPoint][1] * -1 + 900).toDouble());
-      });
-    });
-
-    if (parsedJson['radStrokes'] != null) {
-      _radicalStrokes = List<int>.generate(parsedJson['radStrokes'].length,
-          (index) => parsedJson['radStrokes'][index]);
-    } else {
-      _radicalStrokes = [];
+    try {
+      parsedJson = json.decode(strokeOrder.replaceAll("'", '"'));
+    } catch (e) {
+      throw FormatException("Invalid JSON string for stroke order.");
     }
-    _nStrokes = _strokes.length;
+
+    try {
+      tmpStrokes = List.generate(
+          parsedJson['strokes'].length,
+          (index) => parseSvgPath(parsedJson['strokes'][index]).transform(
+              // Transformation according to the makemeahanzi documentation
+              Matrix4(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 900, 0, 1)
+                  .storage));
+    } catch (e) {
+      throw FormatException("Invalid strokes in stroke order JSON.");
+    }
+
+    try {
+      tmpMedians = List.generate(parsedJson['medians'].length, (iStroke) {
+        return List.generate(parsedJson['medians'][iStroke].length, (iPoint) {
+          return Offset(
+              (parsedJson['medians'][iStroke][iPoint][0]).toDouble(),
+              (parsedJson['medians'][iStroke][iPoint][1] * -1 + 900)
+                  .toDouble());
+        });
+      });
+    } catch (e) {
+      throw FormatException("Invalid medians in stroke order JSON.");
+    }
+
+    if (tmpMedians.length != tmpStrokes.length) {
+      throw FormatException("Number of strokes and medians not equal.");
+    }
+
+    try {
+      tmpRadicalStrokeIndices = List<int /*!*/ >.generate(
+          parsedJson['radStrokes'].length,
+          (index) => parsedJson['radStrokes'][index]);
+    } catch (e) {
+      print("Could not read radical stroke indices from JSON.");
+      tmpRadicalStrokeIndices = [];
+    }
+
+    if (tmpStrokes.isNotEmpty) {
+      _strokeOrder = strokeOrder;
+      _strokes = tmpStrokes;
+      _medians = tmpMedians;
+      _radicalStrokeIndices = tmpRadicalStrokeIndices;
+      _nStrokes = _strokes.length;
+    }
   }
 
   void checkStroke(List<Offset> rawStroke) {
@@ -418,7 +445,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   }
 
   bool strokeIsCorrect(double strokeLength, List<Offset> stroke) {
-    final median = medians[currentStroke];
+    final median = _medians[currentStroke];
     final medianLength = getLength(median);
 
     List<double> allowedLengthRange = getAllowedLengthRange(medianLength);
@@ -562,7 +589,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     // Normalize the animation speed to the length of the stroke
     // The first stroke of 你 (length 520) is taken as reference
     if (currentStroke < nStrokes) {
-      final currentMedian = medians[currentStroke];
+      final currentMedian = _medians[currentStroke];
 
       final medianPath = Path();
       if (currentMedian.length > 1) {
@@ -575,7 +602,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
       final medianLength = medianPath.computeMetrics().first.length;
 
       if (medianLength > 0) {
-        final normFactor = (medianLength / 520).clamp(0.5, 1.5);
+        final normFactor = (medianLength / 520).clamp(0.5, 1.5) as double;
         _setNormalizedStrokeAnimationSpeed(normFactor);
         _setNormalizedHintAnimationSpeed(normFactor);
       }
@@ -588,16 +615,14 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 class QuizSummary {
   int _nStrokes;
   int get nStrokes => _nStrokes;
-  List<List<Offset>> correctStrokePaths;
 
   List<int> mistakes;
+  List<List<Offset>> correctStrokePaths;
 
   int get nTotalMistakes =>
       mistakes.fold(0, (previous, current) => previous + current);
 
-  QuizSummary(int nStrokes) {
-    _nStrokes = nStrokes;
-    correctStrokePaths = List.generate(nStrokes, (index) => []);
+  QuizSummary(this._nStrokes) {
     reset();
   }
 

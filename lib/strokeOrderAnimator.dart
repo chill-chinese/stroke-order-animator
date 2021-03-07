@@ -16,16 +16,11 @@ class StrokeOrderAnimator extends StatefulWidget {
 }
 
 class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
-  static AnimationController _strokeAnimationController;
-  static AnimationController _hintAnimationController;
-
-  List<Offset> points = <Offset>[];
+  List<Offset> _points = <Offset>[];
 
   @override
   void initState() {
     super.initState();
-    _strokeAnimationController = widget._controller.strokeAnimationController;
-    _hintAnimationController = widget._controller.hintAnimationController;
   }
 
   @override
@@ -40,18 +35,18 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
               point.dx <= box.size.width &&
               point.dy >= 0 &&
               point.dy <= box.size.height) {
-            points = List.from(points)..add(point);
+            _points = List.from(_points)..add(point);
           } else {
-            if (points.last != null) {
-              points = List.from(points)..add(null);
+            if (_points.last != null) {
+              _points = List.from(_points)..add(null);
             }
           }
         });
       },
       onPanEnd: (DragEndDetails details) {
-        widget._controller.checkStroke(points);
+        widget._controller.checkStroke(_points);
         setState(() {
-          points.clear();
+          _points.clear();
         });
       },
       child: Stack(
@@ -74,8 +69,8 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
                 (widget._controller.isAnimating ||
                     widget._controller.isQuizzing);
             final animationController = widget._controller.isQuizzing
-                ? _hintAnimationController
-                : _strokeAnimationController;
+                ? widget._controller.hintAnimationController
+                : widget._controller.strokeAnimationController;
 
             return SizedBox(
               width: 1024,
@@ -102,7 +97,7 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
           if (widget._controller.isQuizzing)
             Container(
               child: CustomPaint(
-                painter: Brush(points,
+                painter: Brush(_points,
                     brushColor: widget._controller.brushColor,
                     brushWidth: widget._controller.brushWidth),
               ),
@@ -139,7 +134,7 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
 class StrokePainter extends CustomPainter {
   // If the stroke should be animated, an animation and the median have to be provided
   final bool animate;
-  final Animation<double> animation;
+  final Animation<double> /*!*/ animation;
   final Path strokeOutlinePath;
   final Color strokeColor;
   final Color outlineColor;
