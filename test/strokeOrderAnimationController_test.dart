@@ -287,7 +287,7 @@ void main() {
       final controller =
           StrokeOrderAnimationController(strokeOrders[5], tickerProvider);
 
-      QuizSummary summary1;
+      late QuizSummary summary1;
       int nCalledOnQuizComplete1 = 0;
 
       final onQuizComplete1 = (summary) {
@@ -323,7 +323,7 @@ void main() {
       });
 
       test('Summary gets passed to additional callback', () {
-        QuizSummary summary2;
+        late QuizSummary summary2;
         int nCalledOnQuizComplete2 = 0;
 
         final onQuizComplete2 = (summary) {

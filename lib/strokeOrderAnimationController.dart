@@ -95,9 +95,9 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     double brushWidth: 8.0,
     int hintAfterStrokes: 3,
     Color hintColor: Colors.lightBlueAccent,
-    Function onQuizCompleteCallback,
-    Function onWrongStrokeCallback,
-    Function onCorrectStrokeCallback,
+    Function? onQuizCompleteCallback,
+    Function? onWrongStrokeCallback,
+    Function? onCorrectStrokeCallback,
   })  : _strokeColor = strokeColor,
         _showStroke = showStroke,
         _showOutline = showOutline,
@@ -341,19 +341,19 @@ class StrokeOrderAnimationController extends ChangeNotifier {
         milliseconds: (normFactor / _hintAnimationSpeed * 1000).toInt());
   }
 
-  void addOnQuizCompleteCallback(Function onQuizCompleteCallback) {
+  void addOnQuizCompleteCallback(Function? onQuizCompleteCallback) {
     if (onQuizCompleteCallback != null) {
       _onQuizCompleteCallbacks.add(onQuizCompleteCallback);
     }
   }
 
-  void addOnWrongStrokeCallback(Function onWrongStrokeCallback) {
+  void addOnWrongStrokeCallback(Function? onWrongStrokeCallback) {
     if (onWrongStrokeCallback != null) {
       _onWrongStrokeCallbacks.add(onWrongStrokeCallback);
     }
   }
 
-  void addOnCorrectStrokeCallback(Function onCorrectStrokeCallback) {
+  void addOnCorrectStrokeCallback(Function? onCorrectStrokeCallback) {
     if (onCorrectStrokeCallback != null) {
       _onCorrectStrokeCallbacks.add(onCorrectStrokeCallback);
     }
@@ -400,7 +400,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     }
 
     try {
-      tmpRadicalStrokeIndices = List<int /*!*/ >.generate(
+      tmpRadicalStrokeIndices = List<int >.generate(
           parsedJson['radStrokes'].length,
           (index) => parsedJson['radStrokes'][index]);
     } catch (e) {
@@ -417,7 +417,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     }
   }
 
-  void checkStroke(List<Offset> rawStroke) {
+  void checkStroke(List<Offset?> rawStroke) {
     List<Offset> stroke = getNonNullPointsFrom(rawStroke);
     final strokeLength = getLength(stroke);
 
@@ -571,7 +571,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     return path;
   }
 
-  List<Offset> getNonNullPointsFrom(List<Offset> rawPoints) {
+  List<Offset> getNonNullPointsFrom(List<Offset?> rawPoints) {
     List<Offset> points = [];
 
     for (var point in rawPoints) {
@@ -602,7 +602,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
       final medianLength = medianPath.computeMetrics().first.length;
 
       if (medianLength > 0) {
-        final normFactor = (medianLength / 520).clamp(0.5, 1.5) as double;
+        final normFactor = (medianLength / 520).clamp(0.5, 1.5);
         _setNormalizedStrokeAnimationSpeed(normFactor);
         _setNormalizedHintAnimationSpeed(normFactor);
       }
@@ -616,8 +616,8 @@ class QuizSummary {
   int _nStrokes;
   int get nStrokes => _nStrokes;
 
-  List<int> mistakes;
-  List<List<Offset>> correctStrokePaths;
+  late List<int> mistakes;
+  late List<List<Offset>> correctStrokePaths;
 
   int get nTotalMistakes =>
       mistakes.fold(0, (previous, current) => previous + current);
