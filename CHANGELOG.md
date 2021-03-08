@@ -1,3 +1,7 @@
+## Version 2.0.0
+
+* Migrated to null-safety
+
 ## Version 1.6.1
 
 * Fixed [a bug](https://github.com/Mr-Pepe/stroke-order-animator/issues/17) that prevented setting a new character for an existing controller
