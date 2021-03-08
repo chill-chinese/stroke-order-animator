@@ -9,23 +9,18 @@ import 'package:stroke_order_animator/strokeOrderAnimationController.dart';
 class StrokeOrderAnimator extends StatefulWidget {
   final StrokeOrderAnimationController _controller;
 
-  StrokeOrderAnimator(this._controller, {Key key}) : super(key: key);
+  StrokeOrderAnimator(this._controller, {Key? key}) : super(key: key);
 
   @override
   _StrokeOrderAnimatorState createState() => _StrokeOrderAnimatorState();
 }
 
 class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
-  static AnimationController _strokeAnimationController;
-  static AnimationController _hintAnimationController;
-
-  List<Offset> points = <Offset>[];
+  List<Offset?> _points = <Offset>[];
 
   @override
   void initState() {
     super.initState();
-    _strokeAnimationController = widget._controller.strokeAnimationController;
-    _hintAnimationController = widget._controller.hintAnimationController;
   }
 
   @override
@@ -33,25 +28,25 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
     return GestureDetector(
       onPanUpdate: (DragUpdateDetails details) {
         setState(() {
-          RenderBox box = context.findRenderObject();
+          RenderBox box = context.findRenderObject() as RenderBox;
           Offset point = box.globalToLocal(details.globalPosition);
 
           if (point.dx >= 0 &&
               point.dx <= box.size.width &&
               point.dy >= 0 &&
               point.dy <= box.size.height) {
-            points = List.from(points)..add(point);
+            _points = List.from(_points)..add(point);
           } else {
-            if (points.last != null) {
-              points = List.from(points)..add(null);
+            if (_points.last != null) {
+              _points = List.from(_points)..add(null);
             }
           }
         });
       },
       onPanEnd: (DragEndDetails details) {
-        widget._controller.checkStroke(points);
+        widget._controller.checkStroke(_points);
         setState(() {
-          points.clear();
+          _points.clear();
         });
       },
       child: Stack(
@@ -74,8 +69,8 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
                 (widget._controller.isAnimating ||
                     widget._controller.isQuizzing);
             final animationController = widget._controller.isQuizzing
-                ? _hintAnimationController
-                : _strokeAnimationController;
+                ? widget._controller.hintAnimationController
+                : widget._controller.strokeAnimationController;
 
             return SizedBox(
               width: 1024,
@@ -102,7 +97,7 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
           if (widget._controller.isQuizzing)
             Container(
               child: CustomPaint(
-                painter: Brush(points,
+                painter: Brush(_points,
                     brushColor: widget._controller.brushColor,
                     brushWidth: widget._controller.brushWidth),
               ),
@@ -139,7 +134,7 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
 class StrokePainter extends CustomPainter {
   // If the stroke should be animated, an animation and the median have to be provided
   final bool animate;
-  final Animation<double> animation;
+  final Animation<double>? animation;
   final Path strokeOutlinePath;
   final Color strokeColor;
   final Color outlineColor;
@@ -181,7 +176,7 @@ class StrokePainter extends CustomPainter {
       ..color = strokeColor
       ..style = PaintingStyle.fill;
 
-    if (animate == true && animation != null && median.isNotEmpty) {
+    if (animate == true && median.isNotEmpty) {
       if (strokeStart >= 0 && strokeEnd >= 0) {
         // Split the original path into two paths that follow the outline
         // of the stroke from strokeStart to strokeEnd clockwise and counter-clockwise
@@ -195,10 +190,11 @@ class StrokePainter extends CustomPainter {
         Path finalOutlinePath = contourPaths.first
             .computeMetrics()
             .first
-            .extractPath(0, animation.value * lenFirstPath);
+            .extractPath(0, (animation?.value ?? 1) * lenFirstPath);
         finalOutlinePath.extendWithPath(
             contourPaths.last.computeMetrics().first.extractPath(
-                lenSecondPath - animation.value * lenSecondPath, lenSecondPath),
+                lenSecondPath - (animation?.value ?? 1) * lenSecondPath,
+                lenSecondPath),
             Offset(0, 0));
 
         canvas.drawPath(finalOutlinePath, strokePaint);
@@ -272,7 +268,7 @@ double getClosestPointOnPathAsDistanceOnPath(Path path, Offset queryPoint) {
 
   // Sample nSteps points on the path
   for (var step = 0.0; step < pathLength; step += stepSize) {
-    final tangent = metrics.getTangentForOffset(step);
+    final tangent = metrics.getTangentForOffset(step)!;
     pointsOnPath.add(tangent.position);
   }
 
@@ -294,7 +290,7 @@ double distance2D(Offset p, Offset q) {
 }
 
 class Brush extends CustomPainter {
-  final List<Offset> points;
+  final List<Offset?> points;
   final Color brushColor;
   final double brushWidth;
 
@@ -317,7 +313,7 @@ class Brush extends CustomPainter {
 
     for (int i = 0; i < points.length - 1; i++) {
       if (points[i] != null && points[i + 1] != null) {
-        canvas.drawLine(points[i], points[i + 1], paint);
+        canvas.drawLine(points[i]!, points[i + 1]!, paint);
       }
     }
   }
