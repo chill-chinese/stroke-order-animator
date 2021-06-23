@@ -21,10 +21,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
-  PageController _pageController;
+  PageController? _pageController;
   int _selectedIndex = 0;
 
-  List<StrokeOrderAnimationController> _strokeOrderAnimationControllers;
+  late List<StrokeOrderAnimationController> _strokeOrderAnimationControllers;
 
   @override
   void initState() {
@@ -63,7 +63,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   @override
   void dispose() {
-    _pageController.dispose();
+    _pageController!.dispose();
     for (var controller in _strokeOrderAnimationControllers) {
       controller.dispose();
     }
@@ -176,35 +176,35 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     ),
                     MaterialButton(
                       onPressed: () {
-                        controller.setShowOutline(!controller.showOutline);
+                        controller.setShowOutline(!controller.showOutline!);
                       },
-                      child: controller.showOutline
+                      child: controller.showOutline!
                           ? Text("Hide outline")
                           : Text("Show Outline"),
                     ),
                     MaterialButton(
                       onPressed: () {
-                        controller.setShowMedian(!controller.showMedian);
+                        controller.setShowMedian(!controller.showMedian!);
                       },
-                      child: controller.showMedian
+                      child: controller.showMedian!
                           ? Text("Hide medians")
                           : Text("Show medians"),
                     ),
                     MaterialButton(
                       onPressed: () {
                         controller
-                            .setHighlightRadical(!controller.highlightRadical);
+                            .setHighlightRadical(!controller.highlightRadical!);
                       },
-                      child: controller.highlightRadical
+                      child: controller.highlightRadical!
                           ? Text("Unhighlight radical")
                           : Text("Highlight radical"),
                     ),
                     MaterialButton(
                       onPressed: () {
                         controller
-                            .setShowUserStroke(!controller.showUserStroke);
+                            .setShowUserStroke(!controller.showUserStroke!);
                       },
-                      child: controller.showUserStroke
+                      child: controller.showUserStroke!
                           ? Text("Hide user strokes")
                           : Text("Show user strokes"),
                     ),

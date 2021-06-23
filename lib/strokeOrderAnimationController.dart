@@ -16,22 +16,22 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   String _strokeOrder;
   String get strokeOrder => _strokeOrder;
   final TickerProvider _tickerProvider;
-  List<int> _radicalStrokes;
-  List<int> get radicalStrokes => _radicalStrokes;
+  List<int?>? _radicalStrokes;
+  List<int?>? get radicalStrokes => _radicalStrokes;
 
-  int _nStrokes;
-  int get nStrokes => _nStrokes;
-  int _currentStroke = 0;
-  int get currentStroke => _currentStroke;
-  List<Path> _strokes;
-  List<Path> get strokes => _strokes;
-  List<List<Offset>> medians;
+  int? _nStrokes;
+  int? get nStrokes => _nStrokes;
+  int? _currentStroke = 0;
+  int? get currentStroke => _currentStroke;
+  List<Path>? _strokes;
+  List<Path>? get strokes => _strokes;
+  late List<List<Offset>> medians;
 
-  AnimationController _strokeAnimationController;
-  AnimationController get strokeAnimationController =>
+  AnimationController? _strokeAnimationController;
+  AnimationController? get strokeAnimationController =>
       _strokeAnimationController;
-  AnimationController _hintAnimationController;
-  AnimationController get hintAnimationController => _hintAnimationController;
+  AnimationController? _hintAnimationController;
+  AnimationController? get hintAnimationController => _hintAnimationController;
   bool _isAnimating = false;
   bool get isAnimating => _isAnimating;
   bool _isQuizzing = false;
@@ -39,44 +39,44 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   double _strokeAnimationSpeed = 1;
   double _hintAnimationSpeed = 3;
 
-  QuizSummary _summary;
-  QuizSummary get summary => _summary;
+  QuizSummary? _summary;
+  QuizSummary? get summary => _summary;
 
   List<Function> _onQuizCompleteCallbacks = [];
   List<Function> _onWrongStrokeCallbacks = [];
   List<Function> _onCorrectStrokeCallbacks = [];
 
-  bool _showStroke;
-  bool _showOutline;
-  bool _showMedian;
-  bool _showUserStroke;
-  bool _highlightRadical;
+  bool? _showStroke;
+  bool? _showOutline;
+  bool? _showMedian;
+  bool? _showUserStroke;
+  bool? _highlightRadical;
 
-  bool get showStroke => _showStroke;
-  bool get showOutline => _showOutline;
-  bool get showMedian => _showMedian;
-  bool get showUserStroke => _showUserStroke;
-  bool get highlightRadical => _highlightRadical;
+  bool? get showStroke => _showStroke;
+  bool? get showOutline => _showOutline;
+  bool? get showMedian => _showMedian;
+  bool? get showUserStroke => _showUserStroke;
+  bool? get highlightRadical => _highlightRadical;
 
-  Color _strokeColor;
-  Color _outlineColor;
-  Color _medianColor;
-  Color _radicalColor;
-  Color _brushColor;
-  Color _hintColor;
+  Color? _strokeColor;
+  Color? _outlineColor;
+  Color? _medianColor;
+  Color? _radicalColor;
+  Color? _brushColor;
+  Color? _hintColor;
 
-  Color get strokeColor => _strokeColor;
-  Color get outlineColor => _outlineColor;
-  Color get medianColor => _medianColor;
-  Color get radicalColor => _radicalColor;
-  Color get brushColor => _brushColor;
-  Color get hintColor => _hintColor;
+  Color? get strokeColor => _strokeColor;
+  Color? get outlineColor => _outlineColor;
+  Color? get medianColor => _medianColor;
+  Color? get radicalColor => _radicalColor;
+  Color? get brushColor => _brushColor;
+  Color? get hintColor => _hintColor;
 
-  double _brushWidth;
-  double get brushWidth => _brushWidth;
+  double? _brushWidth;
+  double? get brushWidth => _brushWidth;
 
-  int _hintAfterStrokes;
-  int get hintAfterStrokes => _hintAfterStrokes;
+  int? _hintAfterStrokes;
+  int? get hintAfterStrokes => _hintAfterStrokes;
 
   StrokeOrderAnimationController(
     this._strokeOrder,
@@ -96,28 +96,28 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     double brushWidth: 8.0,
     int hintAfterStrokes: 3,
     Color hintColor: Colors.lightBlueAccent,
-    Function onQuizCompleteCallback,
-    Function onWrongStrokeCallback,
-    Function onCorrectStrokeCallback,
+    Function? onQuizCompleteCallback,
+    Function? onWrongStrokeCallback,
+    Function? onCorrectStrokeCallback,
   }) {
     _strokeAnimationController = AnimationController(
       vsync: _tickerProvider,
     );
 
-    _strokeAnimationController.addStatusListener(_strokeCompleted);
+    _strokeAnimationController!.addStatusListener(_strokeCompleted);
 
     _hintAnimationController = AnimationController(
       vsync: _tickerProvider,
     );
 
-    _hintAnimationController.addStatusListener((status) {
+    _hintAnimationController!.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        _hintAnimationController.reset();
+        _hintAnimationController!.reset();
       }
     });
 
     setStrokeOrder(_strokeOrder);
-    _summary = QuizSummary(_nStrokes);
+    _summary = QuizSummary(_nStrokes!);
     _setCurrentStroke(0);
     setShowStroke(showStroke);
     setShowOutline(showOutline);
@@ -150,8 +150,8 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 
   @override
   dispose() {
-    _strokeAnimationController.dispose();
-    _hintAnimationController.dispose();
+    _strokeAnimationController!.dispose();
+    _hintAnimationController!.dispose();
     _onCorrectStrokeCallbacks.clear();
     _onWrongStrokeCallbacks.clear();
     _onQuizCompleteCallbacks.clear();
@@ -164,16 +164,16 @@ class StrokeOrderAnimationController extends ChangeNotifier {
         _setCurrentStroke(0);
       }
       _isAnimating = true;
-      _strokeAnimationController.forward();
+      _strokeAnimationController!.forward();
       notifyListeners();
     }
   }
 
   void stopAnimation() {
     if (_isAnimating) {
-      _setCurrentStroke(currentStroke + 1);
+      _setCurrentStroke(currentStroke! + 1);
       _isAnimating = false;
-      _strokeAnimationController.reset();
+      _strokeAnimationController!.reset();
       notifyListeners();
     }
   }
@@ -182,8 +182,8 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     if (!_isQuizzing) {
       _isAnimating = false;
       _setCurrentStroke(0);
-      summary.reset();
-      _strokeAnimationController.reset();
+      summary!.reset();
+      _strokeAnimationController!.reset();
       _isQuizzing = true;
       notifyListeners();
     }
@@ -192,7 +192,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   void stopQuiz() {
     if (_isQuizzing) {
       _isAnimating = false;
-      _strokeAnimationController.reset();
+      _strokeAnimationController!.reset();
       _isQuizzing = false;
       notifyListeners();
     }
@@ -203,17 +203,17 @@ class StrokeOrderAnimationController extends ChangeNotifier {
       if (currentStroke == _nStrokes) {
         _setCurrentStroke(1);
       } else if (_isAnimating) {
-        _setCurrentStroke(currentStroke + 1);
-        _strokeAnimationController.reset();
+        _setCurrentStroke(currentStroke! + 1);
+        _strokeAnimationController!.reset();
 
-        if (currentStroke < _nStrokes) {
-          _strokeAnimationController.forward();
+        if (currentStroke! < _nStrokes!) {
+          _strokeAnimationController!.forward();
         } else {
           _isAnimating = false;
         }
       } else {
-        if (currentStroke < _nStrokes) {
-          _setCurrentStroke(currentStroke + 1);
+        if (currentStroke! < _nStrokes!) {
+          _setCurrentStroke(currentStroke! + 1);
         }
       }
 
@@ -224,12 +224,12 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   void previousStroke() {
     if (!_isQuizzing) {
       if (currentStroke != 0) {
-        _setCurrentStroke(currentStroke - 1);
+        _setCurrentStroke(currentStroke! - 1);
       }
 
       if (_isAnimating) {
-        _strokeAnimationController.reset();
-        _strokeAnimationController.forward();
+        _strokeAnimationController!.reset();
+        _strokeAnimationController!.forward();
       }
 
       notifyListeners();
@@ -239,8 +239,8 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   void reset() {
     _setCurrentStroke(0);
     _isAnimating = false;
-    _strokeAnimationController.reset();
-    summary.reset();
+    _strokeAnimationController!.reset();
+    summary!.reset();
     notifyListeners();
   }
 
@@ -248,17 +248,17 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     if (!_isQuizzing) {
       _setCurrentStroke(_nStrokes);
       _isAnimating = false;
-      _strokeAnimationController.reset();
+      _strokeAnimationController!.reset();
       notifyListeners();
     }
   }
 
   void _strokeCompleted(AnimationStatus status) {
     if (status == AnimationStatus.completed) {
-      _setCurrentStroke(currentStroke + 1);
-      _strokeAnimationController.reset();
-      if (currentStroke < _nStrokes) {
-        _strokeAnimationController.forward();
+      _setCurrentStroke(currentStroke! + 1);
+      _strokeAnimationController!.reset();
+      if (currentStroke! < _nStrokes!) {
+        _strokeAnimationController!.forward();
       } else {
         _isAnimating = false;
       }
@@ -342,12 +342,12 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   }
 
   void _setNormalizedStrokeAnimationSpeed(double normFactor) {
-    _strokeAnimationController.duration = Duration(
+    _strokeAnimationController!.duration = Duration(
         milliseconds: (normFactor / _strokeAnimationSpeed * 1000).toInt());
   }
 
   void _setNormalizedHintAnimationSpeed(double normFactor) {
-    _hintAnimationController.duration = Duration(
+    _hintAnimationController!.duration = Duration(
         milliseconds: (normFactor / _hintAnimationSpeed * 1000).toInt());
   }
 
@@ -382,33 +382,33 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     });
 
     if (parsedJson['radStrokes'] != null) {
-      _radicalStrokes = List<int>.generate(parsedJson['radStrokes'].length,
+      _radicalStrokes = List<int?>.generate(parsedJson['radStrokes'].length,
           (index) => parsedJson['radStrokes'][index]);
     } else {
       _radicalStrokes = [];
     }
-    _nStrokes = _strokes.length;
+    _nStrokes = _strokes!.length;
   }
 
-  void checkStroke(List<Offset> rawStroke) {
+  void checkStroke(List<Offset?> rawStroke) {
     List<Offset> stroke = getNonNullPointsFrom(rawStroke);
     final strokeLength = getLength(stroke);
 
-    if (isQuizzing && currentStroke < nStrokes && strokeLength > 0) {
+    if (isQuizzing && currentStroke! < nStrokes! && strokeLength > 0) {
       if (strokeIsCorrect(strokeLength, stroke)) {
         notifyCorrectStrokeCallbacks();
-        _summary.correctStrokePaths[currentStroke] = stroke;
-        _setCurrentStroke(currentStroke + 1);
+        _summary!.correctStrokePaths[currentStroke!] = stroke;
+        _setCurrentStroke(currentStroke! + 1);
 
         if (currentStroke == nStrokes) {
           stopQuiz();
           notifyQuizCompleteCallbacks();
         }
       } else {
-        summary.mistakes[currentStroke] += 1;
+        summary!.mistakes[currentStroke!] += 1;
         notifyWrongStrokeCallbacks();
 
-        if (summary.mistakes[currentStroke] >= hintAfterStrokes) {
+        if (summary!.mistakes[currentStroke!] >= hintAfterStrokes!) {
           animateHint();
         }
       }
@@ -418,7 +418,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   }
 
   bool strokeIsCorrect(double strokeLength, List<Offset> stroke) {
-    final median = medians[currentStroke];
+    final median = medians[currentStroke!];
     final medianLength = getLength(median);
 
     List<double> allowedLengthRange = getAllowedLengthRange(medianLength);
@@ -437,8 +437,8 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 
   void animateHint() {
     if (!(debugSemanticsDisableAnimations ?? false)) {
-      _hintAnimationController.reset();
-      _hintAnimationController.forward();
+      _hintAnimationController!.reset();
+      _hintAnimationController!.forward();
     }
   }
 
@@ -544,7 +544,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     return path;
   }
 
-  List<Offset> getNonNullPointsFrom(List<Offset> rawPoints) {
+  List<Offset> getNonNullPointsFrom(List<Offset?> rawPoints) {
     List<Offset> points = [];
 
     for (var point in rawPoints) {
@@ -556,13 +556,13 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     return points;
   }
 
-  void _setCurrentStroke(int value) {
+  void _setCurrentStroke(int? value) {
     _currentStroke = value;
 
     // Normalize the animation speed to the length of the stroke
     // The first stroke of 你 (length 520) is taken as reference
-    if (currentStroke < nStrokes) {
-      final currentMedian = medians[currentStroke];
+    if (currentStroke! < nStrokes!) {
+      final currentMedian = medians[currentStroke!];
 
       final medianPath = Path();
       if (currentMedian.length > 1) {
@@ -575,8 +575,8 @@ class StrokeOrderAnimationController extends ChangeNotifier {
       final medianLength = medianPath.computeMetrics().first.length;
 
       if (medianLength > 0) {
-        final normFactor = (medianLength / 520).clamp(0.5, 1.5);
-        _setNormalizedStrokeAnimationSpeed(normFactor);
+        final num normFactor = (medianLength / 520).clamp(0.5, 1.5);
+        _setNormalizedStrokeAnimationSpeed(normFactor as double);
         _setNormalizedHintAnimationSpeed(normFactor);
       }
     }
@@ -586,11 +586,11 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 }
 
 class QuizSummary {
-  int _nStrokes;
-  int get nStrokes => _nStrokes;
-  List<List<Offset>> correctStrokePaths;
+  int? _nStrokes;
+  int? get nStrokes => _nStrokes;
+  late List<List<Offset>> correctStrokePaths;
 
-  List<int> mistakes;
+  late List<int> mistakes;
 
   int get nTotalMistakes =>
       mistakes.fold(0, (previous, current) => previous + current);
@@ -602,7 +602,7 @@ class QuizSummary {
   }
 
   void reset() {
-    mistakes = List.generate(nStrokes, (index) => 0);
-    correctStrokePaths = List.generate(nStrokes, (index) => []);
+    mistakes = List.generate(nStrokes!, (index) => 0);
+    correctStrokePaths = List.generate(nStrokes!, (index) => []);
   }
 }

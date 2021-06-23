@@ -9,17 +9,17 @@ import 'package:stroke_order_animator/strokeOrderAnimationController.dart';
 class StrokeOrderAnimator extends StatefulWidget {
   final StrokeOrderAnimationController _controller;
 
-  StrokeOrderAnimator(this._controller, {Key key}) : super(key: key);
+  StrokeOrderAnimator(this._controller, {Key? key}) : super(key: key);
 
   @override
   _StrokeOrderAnimatorState createState() => _StrokeOrderAnimatorState();
 }
 
 class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
-  static AnimationController _strokeAnimationController;
-  static AnimationController _hintAnimationController;
+  static AnimationController? _strokeAnimationController;
+  static AnimationController? _hintAnimationController;
 
-  List<Offset> points = <Offset>[];
+  List<Offset?> points = <Offset>[];
 
   @override
   void initState() {
@@ -33,7 +33,7 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
     return GestureDetector(
       onPanUpdate: (DragUpdateDetails details) {
         setState(() {
-          RenderBox box = context.findRenderObject();
+          RenderBox box = context.findRenderObject() as RenderBox;
           Offset point = box.globalToLocal(details.globalPosition);
 
           if (point.dx >= 0 &&
@@ -56,12 +56,12 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
       },
       child: Stack(
         children: <Widget>[
-          ...List.generate(widget._controller.strokes.length, (index) {
+          ...List.generate(widget._controller.strokes!.length, (index) {
             // Determine whether to use standard stroke color, radical color or hint color
-            Color strokeColor = widget._controller.strokeColor;
+            Color? strokeColor = widget._controller.strokeColor;
 
-            if (widget._controller.highlightRadical &&
-                widget._controller.radicalStrokes.contains(index)) {
+            if (widget._controller.highlightRadical! &&
+                widget._controller.radicalStrokes!.contains(index)) {
               strokeColor = widget._controller.radicalColor;
             }
 
@@ -81,9 +81,9 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
               width: 1024,
               height: 1024,
               child: CustomPaint(
-                  painter: StrokePainter(widget._controller.strokes[index],
-                      showStroke: widget._controller.showStroke &&
-                          index < widget._controller.currentStroke,
+                  painter: StrokePainter(widget._controller.strokes![index],
+                      showStroke: widget._controller.showStroke! &&
+                          index < widget._controller.currentStroke!,
                       strokeColor: strokeColor,
                       showOutline: widget._controller.showOutline,
                       outlineColor: widget._controller.outlineColor,
@@ -94,9 +94,9 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
                       median: widget._controller.medians[index])),
             );
           }),
-          if (widget._controller.showUserStroke)
+          if (widget._controller.showUserStroke!)
             ...paintCorrectStrokes(
-                widget._controller.summary.correctStrokePaths,
+                widget._controller.summary!.correctStrokePaths,
                 brushColor: widget._controller.brushColor,
                 brushWidth: widget._controller.brushWidth),
           if (widget._controller.isQuizzing)
@@ -113,7 +113,7 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
   }
 
   List<Container> paintCorrectStrokes(List<List<Offset>> correctStrokePaths,
-      {Color brushColor: Colors.black, double brushWidth: 8}) {
+      {Color? brushColor: Colors.black, double? brushWidth: 8}) {
     final List<Container> brushStrokes = [];
 
     for (var strokePath in correctStrokePaths) {
@@ -139,14 +139,14 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
 class StrokePainter extends CustomPainter {
   // If the stroke should be animated, an animation and the median have to be provided
   final bool animate;
-  final Animation<double> animation;
+  final Animation<double>? animation;
   final Path strokeOutlinePath;
-  final Color strokeColor;
-  final Color outlineColor;
-  final Color medianColor;
-  final bool showOutline;
+  final Color? strokeColor;
+  final Color? outlineColor;
+  final Color? medianColor;
+  final bool? showOutline;
   final bool showStroke;
-  final bool showMedian;
+  final bool? showMedian;
   final List<Offset> median;
 
   double strokeStart = -1;
@@ -178,7 +178,7 @@ class StrokePainter extends CustomPainter {
     }
 
     var strokePaint = Paint()
-      ..color = strokeColor
+      ..color = strokeColor!
       ..style = PaintingStyle.fill;
 
     if (animate == true && animation != null && median.isNotEmpty) {
@@ -195,10 +195,10 @@ class StrokePainter extends CustomPainter {
         Path finalOutlinePath = contourPaths.first
             .computeMetrics()
             .first
-            .extractPath(0, animation.value * lenFirstPath);
+            .extractPath(0, animation!.value * lenFirstPath);
         finalOutlinePath.extendWithPath(
             contourPaths.last.computeMetrics().first.extractPath(
-                lenSecondPath - animation.value * lenSecondPath, lenSecondPath),
+                lenSecondPath - animation!.value * lenSecondPath, lenSecondPath),
             Offset(0, 0));
 
         canvas.drawPath(finalOutlinePath, strokePaint);
@@ -207,15 +207,15 @@ class StrokePainter extends CustomPainter {
       canvas.drawPath(strokeOutlinePath, strokePaint);
     }
 
-    if (showOutline) {
+    if (showOutline!) {
       var borderPaint = Paint()
-        ..color = outlineColor
+        ..color = outlineColor!
         ..strokeWidth = 2.0
         ..style = PaintingStyle.stroke;
       canvas.drawPath(strokeOutlinePath, borderPaint);
     }
 
-    if (showMedian) {
+    if (showMedian!) {
       final medianPath = Path();
       medianPath.moveTo(median[0].dx.toDouble(), median[0].dy.toDouble());
       for (var point in median) {
@@ -226,7 +226,7 @@ class StrokePainter extends CustomPainter {
           Paint()
             ..style = PaintingStyle.stroke
             ..strokeWidth = 2.0
-            ..color = medianColor);
+            ..color = medianColor!);
     }
   }
 
@@ -272,7 +272,7 @@ double getClosestPointOnPathAsDistanceOnPath(Path path, Offset queryPoint) {
 
   // Sample nSteps points on the path
   for (var step = 0.0; step < pathLength; step += stepSize) {
-    final tangent = metrics.getTangentForOffset(step);
+    final tangent = metrics.getTangentForOffset(step)!;
     pointsOnPath.add(tangent.position);
   }
 
@@ -294,9 +294,9 @@ double distance2D(Offset p, Offset q) {
 }
 
 class Brush extends CustomPainter {
-  final List<Offset> points;
-  final Color brushColor;
-  final double brushWidth;
+  final List<Offset?> points;
+  final Color? brushColor;
+  final double? brushWidth;
 
   Brush(
     this.points, {
@@ -311,13 +311,13 @@ class Brush extends CustomPainter {
 
   void paint(Canvas canvas, Size size) {
     Paint paint = Paint()
-      ..color = brushColor
+      ..color = brushColor!
       ..strokeCap = StrokeCap.round
-      ..strokeWidth = brushWidth;
+      ..strokeWidth = brushWidth!;
 
     for (int i = 0; i < points.length - 1; i++) {
       if (points[i] != null && points[i + 1] != null) {
-        canvas.drawLine(points[i], points[i + 1], paint);
+        canvas.drawLine(points[i]!, points[i + 1]!, paint);
       }
     }
   }
