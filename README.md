@@ -2,6 +2,8 @@
 
 [![Pub](https://img.shields.io/pub/v/stroke_order_animator.svg)](https://pub.dev/packages/stroke_order_animator)
 
+__Try the [web version](https://mr-pepe.github.io/stroke-order-animator).__
+
 This package implements stroke order animations and quizzes of Chinese characters based on the [Make me a Hanzi](https://github.com/skishore/makemeahanzi) data.
 That data is available under the [ARPHIC public license](ARPHICPL.txt).
 
@@ -54,8 +56,6 @@ git clone https://github.com/Mr-Pepe/stroke-order-animator
 cd stroke-order-animator/example/
 flutter run
 ```
-
-You can try the web version [here](https://mr-pepe.github.io/stroke-order-animator).
 
 ## Issues and feature requests
 
