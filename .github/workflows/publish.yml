@@ -2,7 +2,7 @@ name: Test package and publish to pub.dev
 on:
   push:
     branches:
-      - master
+      - main
 jobs:
   publishing:
     runs-on: ubuntu-latest

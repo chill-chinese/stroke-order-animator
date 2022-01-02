@@ -55,6 +55,8 @@ cd stroke-order-animator/example/
 flutter run
 ```
 
+You can try the web version [here](https://mr-pepe.github.io/stroke-order-animator).
+
 ## Issues and feature requests
 
 Please file an issue on the project page if something doesn't work as expected or if you have a feature request.

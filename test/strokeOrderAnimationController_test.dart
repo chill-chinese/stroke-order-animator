@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stroke_order_animator/strokeOrderAnimationController.dart';
@@ -253,12 +252,6 @@ void main() {
           controller.reset();
           expect(controller.summary.correctStrokePaths.length,
               controller.summary.nStrokes);
-        });
-
-        test('Every path is a list of Offsets', () {
-          controller.reset();
-          expect(
-              controller.summary.correctStrokePaths[0] is List<Offset>, true);
         });
 
         test('Correct stroke gets added to the list', () {
