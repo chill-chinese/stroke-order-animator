@@ -1,7 +1,6 @@
 import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:stroke_order_animator/strokeOrderAnimationController.dart';
 
 /// A widget for displaying a stroke order diagram.

@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
 import 'package:stroke_order_animator/strokeOrderAnimator.dart';
 import 'package:svg_path_parser/svg_path_parser.dart';
 
