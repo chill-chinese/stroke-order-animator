@@ -1,3 +1,7 @@
+## Version 2.0.1
+
+* Updated dependencies and improved example for web and desktop
+
 ## Version 2.0.0
 
 * Migrated to null-safety
