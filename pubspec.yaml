@@ -2,7 +2,8 @@ name: stroke_order_animator
 description: Stroke order animations and quizzes for Chinese characters for use
   in Flutter apps
 
-version: 2.1.0
+# Version gets set by cider during publishing
+version: 0.0.0
 
 homepage: https://github.com/Mr-Pepe/stroke-order-animator
 
