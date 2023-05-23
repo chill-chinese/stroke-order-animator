@@ -13,11 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      - uses: dart-lang/setup-dart@v1
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
 
       - name: Install dependencies
-        run: dart pub get
+        run: flutter pub get
 
       - name: Bump version
         run: |
@@ -25,4 +26,4 @@ jobs:
           flutter pub global run cider version ${{  github.ref_name }}
 
       - name: Publish
-        run: dart pub publish --force
+        run: flutter pub publish --force
