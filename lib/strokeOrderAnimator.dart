@@ -107,7 +107,7 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
   }
 
   List<Container> paintCorrectStrokes(List<List<Offset>> correctStrokePaths,
-      {Color brushColor: Colors.black, double brushWidth: 8}) {
+      {Color brushColor = Colors.black, double brushWidth = 8}) {
     final List<Container> brushStrokes = [];
 
     for (var strokePath in correctStrokePaths) {

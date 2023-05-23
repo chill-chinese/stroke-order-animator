@@ -1,3 +1,7 @@
+## Version 2.1.0
+
+* Updated dependencies and migrated to Dart 3.0
+
 ## Version 2.0.1
 
 * Updated dependencies and improved example for web and desktop

@@ -24,10 +24,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
-  PageController _pageController;
+  late PageController _pageController;
   int _selectedIndex = 0;
 
-  List<StrokeOrderAnimationController> _strokeOrderAnimationControllers;
+  late List<StrokeOrderAnimationController> _strokeOrderAnimationControllers;
 
   @override
   void initState() {
