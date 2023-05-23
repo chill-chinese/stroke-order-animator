@@ -1,3 +1,4 @@
+# https://dart.dev/tools/pub/automated-publishing#configuring-automated-publishing-from-github-actions-on-pubdev
 name: Publish to pub.dev
 
 on:
@@ -7,9 +8,21 @@ on:
 
 jobs:
   publish:
+    permissions:
+      id-token: write
     runs-on: ubuntu-latest
     steps:
-    - run: flutter pub global activate cider
-    - run: flutter pub global run cider version ${{  github.ref_name }}
+      - uses: actions/checkout@v3
 
-    - uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
+      - uses: dart-lang/setup-dart@v1
+
+      - name: Install dependencies
+        run: dart pub get
+
+      - name: Bump version
+        run: |
+          flutter pub global activate cider
+          flutter pub global run cider version ${{  github.ref_name }}
+
+      - name: Publish
+        run: dart pub publish --force
