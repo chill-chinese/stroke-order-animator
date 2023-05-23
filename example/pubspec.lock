@@ -184,10 +184,10 @@ packages:
     dependency: transitive
     description:
       name: svg_path_parser
-      sha256: "9c0c53633baedeaae304b417f07d05f2dc2de3de558dc6a1d8db6e68e72e0d5f"
+      sha256: c0864f85efd1024e9f667ddcda10601b1199e3980fb07d63701f9b9a047bdab3
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.0"
+    version: "1.1.1"
   term_glyph:
     dependency: transitive
     description:
