@@ -5,11 +5,18 @@
 __Try the [web version](https://mr-pepe.github.io/stroke-order-animator).__
 
 This package implements stroke order animations and quizzes of Chinese characters based on the [Make me a Hanzi](https://github.com/skishore/makemeahanzi) data.
-That data is available under the [ARPHIC public license](ARPHICPL.txt).
 
-The package uses a `StrokeOrderAnimationController` that handles the animation state and serves as an interface between your app and the stroke order animation. The stroke order data has to be passed in as a JSON string. In order to control animations, a `TickerProvider` must be passed to the controller, for example using a `TickerProviderStateMixin`. The controller is then passed as an argument to the `StrokeOrderAnimator` that displays the actual stroke order diagram.
+A `StrokeOrderAnimationController` handles the animation state and serves as an interface between your app and the stroke order animation.
+In order to control animations, a `TickerProvider` must be passed to the controller, for example using a `TickerProviderStateMixin`.
+The controller is then passed as an argument to the `StrokeOrderAnimator` that displays the actual stroke order diagram.
 
-When using the animations in a PageView or ListView, it is recommended to use a unique key for every `StrokeOrderAnimator` and cancel the animation when the selected page changes in order to avoid broken animation behaviour.
+The stroke order data has to be passed in as a JSON string.
+You can download all stroke order data for offline usage directly from [here](https://raw.githubusercontent.com/skishore/makemeahanzi/master/graphics.txt).
+Data for single characters can be downloaded through the [Hanzi Writer Data](https://github.com/chanind/hanzi-writer-data) project, e.g., via https://cdn.jsdelivr.net/npm/hanzi-writer-data@latest/我.json.
+Don't forget to replace double quotation marks (`"`) with single ones (`'`).
+The stroke order data is available under the [ARPHIC public license](ARPHICPL.txt).
+
+When using the animations in a PageView or ListView, it is recommended to use a unique key for every `StrokeOrderAnimator` and cancel the animation when the selected page changes in order to avoid broken animation behavior.
 
 All attributes and actions of the stroke order diagram are controlled via the `StrokeOrderAnimationController` and can be changed anytime using the respective setter methods.
 
