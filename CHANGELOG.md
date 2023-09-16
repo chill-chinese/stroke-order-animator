@@ -1,3 +1,5 @@
+See [GitHub releases](https://github.com/Mr-Pepe/stroke-order-animator/releases) for newer versions.
+
 ## Version 2.1.0
 
 * Updated dependencies and migrated to Dart 3.0
