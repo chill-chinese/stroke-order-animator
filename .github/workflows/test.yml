@@ -24,8 +24,21 @@ jobs:
         channel: 'stable'
         cache: true
 
+    - name: Restore Dart cache
+      id: restore-dart-cache
+      uses: actions/cache/restore@v3
+      with:
+        path: .dart_tool
+        key: ${{ runner.os }}-dart-${{ hashFiles('**/pubspec.lock') }}-
+
     - run: flutter pub get
     - run: dart format --set-exit-if-changed .
     - run: dart run build_runner build # Generate mocks
     - run: flutter analyze .
     - run: flutter test
+
+    - name: Save Dart cache
+      uses: actions/cache/save@v3
+      with:
+        path: .dart_tool
+        key: ${{ runner.os }}-dart-${{ hashFiles('**/pubspec.lock') }}-${{ github.run_id }}
