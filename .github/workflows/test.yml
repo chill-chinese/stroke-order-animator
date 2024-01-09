@@ -31,7 +31,7 @@ jobs:
         path: .dart_tool
         key: ${{ runner.os }}-dart-${{ hashFiles('**/pubspec.lock') }}-
 
-    - run: flutter pub get
+    - run: flutter pub get --enforce-lockfile
     - run: dart format --set-exit-if-changed .
     - run: dart run build_runner build # Generate mocks
     - run: flutter analyze .
