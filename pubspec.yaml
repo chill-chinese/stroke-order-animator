@@ -10,7 +10,7 @@ homepage: https://github.com/Mr-Pepe/stroke-order-animator
 repository: https://github.com/Mr-Pepe/stroke-order-animator
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: ">=3.0.0 <4.0.0"
 
 dependencies:
   flutter:
@@ -18,10 +18,13 @@ dependencies:
   fluttertoast: ^8.0.8
   provider: ^6.0.5
   svg_path_parser: ^1.0.0
+  http: ^1.1.2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  build_runner: ^2.4.7
+  mockito: ^5.4.4
 
 flutter:
   uses-material-design: true
