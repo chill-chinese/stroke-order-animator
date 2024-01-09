@@ -1,0 +1,26 @@
+name: Auto-Approve
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  auto-approve:
+    runs-on: ubuntu-latest
+    if: |
+        github.event.issue.pull_request != ''
+        && github.event.comment.user.login == 'Mr-Pepe'
+        && contains(github.event.comment.body, 'LGTM')
+    permissions:
+      pull-requests: write
+    steps:
+    - name: Approve PR
+      uses: actions/github-script@v4
+      with:
+        script: |
+          await github.pulls.createReview({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.issue.number,
+            event: 'APPROVE'
+          })
