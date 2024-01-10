@@ -1,0 +1,11 @@
+on:
+    push:
+      paths:
+        - '.github/workflows/**'
+
+jobs:
+    tmp:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Check out repository
+              uses: actions/checkout@v4
