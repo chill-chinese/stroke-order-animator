@@ -1,8 +1,6 @@
 # Stroke order animator
 
-[![Pub](https://img.shields.io/pub/v/stroke_order_animator.svg)](https://pub.dev/packages/stroke_order_animator)
-
-__Try the [web version](https://mr-pepe.github.io/stroke-order-animator).__
+[![Pub](https://img.shields.io/pub/v/stroke_order_animator.svg)](https://pub.dev/packages/stroke_order_animator) __Try the [web version](https://mr-pepe.github.io/stroke-order-animator).__
 
 This package implements stroke order animations and quizzes of Chinese characters based on the [Make me a Hanzi](https://github.com/skishore/makemeahanzi) data.
 

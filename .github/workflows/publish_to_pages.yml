@@ -1,12 +1,57 @@
 name: Deploy to GitHub Pages
 
 on:
-  # Allows you to run this workflow manually from the Actions tab
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+*'
+
+  # Allows to run this workflow manually from the Actions tab
   workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get --enforce-lockfile
+
+      - name: Build example web app
+        run: |
+          cd example
+          flutter pub get
+          flutter build web --build-name ${{  github.ref_name }} --base-href /stroke-order-animator/
+
+      - name: Set up GitHub Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'example/build/web'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
