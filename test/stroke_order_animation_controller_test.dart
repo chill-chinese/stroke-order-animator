@@ -2,10 +2,10 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stroke_order_animator/strokeOrderAnimationController.dart';
 
-import 'testStrokes.dart';
+import 'test_strokes.dart';
 
 void main() {
-  final tickerProvider = TestVSync();
+  const tickerProvider = TestVSync();
   debugSemanticsDisableAnimations = true;
 
   group('Test stroke count and stroke order ', () {
@@ -62,7 +62,7 @@ void main() {
     });
 
     test('Invalid JSON string throws exception', () {
-      expect(() => controllers[0].setStrokeOrder("..."), throwsFormatException);
+      expect(() => controllers[0].setStrokeOrder('...'), throwsFormatException);
     });
 
     test('Invalid strokes in JSON throw exceptions', () {
@@ -75,9 +75,11 @@ void main() {
         // "{'strokes': ['5'], 'medians': [], 'radStrokes': [0]}"
       ];
 
-      for (var invalidJSON in invalidJSONs) {
-        expect(() => controllers[0].setStrokeOrder(invalidJSON),
-            throwsFormatException);
+      for (final invalidJSON in invalidJSONs) {
+        expect(
+          () => controllers[0].setStrokeOrder(invalidJSON),
+          throwsFormatException,
+        );
       }
     });
 
@@ -89,27 +91,32 @@ void main() {
         "{'strokes': ['M 440 788 Q 497 731 535 718 Q 553 717 562 732 Q 569 748 564 767 Q 546 815 477 828 Q 438 841 421 834 Q 414 831 418 817 Q 421 804 440 788 Z'], 'medians': [[[428]]], 'radStrokes': [1, 2, 3, 4]}",
       ];
 
-      for (var invalidJSON in invalidJSONs) {
-        expect(() => controllers[0].setStrokeOrder(invalidJSON),
-            throwsFormatException);
+      for (final invalidJSON in invalidJSONs) {
+        expect(
+          () => controllers[0].setStrokeOrder(invalidJSON),
+          throwsFormatException,
+        );
       }
     });
 
     test('Unequal number of strokes and medians throws exception', () {
       expect(
-          () => controllers[0].setStrokeOrder(
-              "{'strokes': ['M 440 788 Q 497 731 535 718 Q 553 717 562 732 Q 569 748 564 767 Q 546 815 477 828 Q 438 841 421 834 Q 414 831 418 817 Q 421 804 440 788 Z'], 'medians': [[[428, 824]], [[1, 2]]], 'radStrokes': [1, 2, 3, 4]}"),
-          throwsFormatException);
+        () => controllers[0].setStrokeOrder(
+          "{'strokes': ['M 440 788 Q 497 731 535 718 Q 553 717 562 732 Q 569 748 564 767 Q 546 815 477 828 Q 438 841 421 834 Q 414 831 418 817 Q 421 804 440 788 Z'], 'medians': [[[428, 824]], [[1, 2]]], 'radStrokes': [1, 2, 3, 4]}",
+        ),
+        throwsFormatException,
+      );
     });
 
     test('Invalid radical stroke indices leads to empty list', () {
       controllers[0].setStrokeOrder(
-          "{'strokes': ['M 440 788 Q 497 731 535 718 Q 553 717 562 732 Q 569 748 564 767 Q 546 815 477 828 Q 438 841 421 834 Q 414 831 418 817 Q 421 804 440 788 Z'], 'medians': [[[428, 824], [1, 2]]], 'radStrokes': ['12', 3, 4]}");
+        "{'strokes': ['M 440 788 Q 497 731 535 718 Q 553 717 562 732 Q 569 748 564 767 Q 546 815 477 828 Q 438 841 421 834 Q 414 831 418 817 Q 421 804 440 788 Z'], 'medians': [[[428, 824], [1, 2]]], 'radStrokes': ['12', 3, 4]}",
+      );
       expect(controllers[0].radicalStrokes, equals([]));
     });
   });
 
-  group("Test animation controls", () {
+  group('Test animation controls', () {
     final controller =
         StrokeOrderAnimationController(strokeOrders[0], tickerProvider);
 
@@ -208,7 +215,7 @@ void main() {
         controller.checkStroke(wrongStroke00);
         controller.reset();
         expect(controller.summary.nTotalMistakes, 0);
-        for (var nMistakes in controller.summary.mistakes) {
+        for (final nMistakes in controller.summary.mistakes) {
           expect(nMistakes, 0);
         }
       });
@@ -241,7 +248,7 @@ void main() {
 
       test('Stroke of length 0 does not count as mistake', () {
         controller.reset();
-        controller.checkStroke([Offset(0, 0), Offset(0, 0)]);
+        controller.checkStroke([Offset.zero, Offset.zero]);
         expect(controller.summary.nTotalMistakes, 0);
       });
 
@@ -250,14 +257,16 @@ void main() {
             'Summary has a list of stroke paths with length == number of strokes',
             () {
           controller.reset();
-          expect(controller.summary.correctStrokePaths.length,
-              controller.summary.nStrokes);
+          expect(
+            controller.summary.correctStrokePaths.length,
+            controller.summary.nStrokes,
+          );
         });
 
         test('Correct stroke gets added to the list', () {
           controller.reset();
           controller.checkStroke(correctStroke00);
-          expect(controller.summary.correctStrokePaths[0].length > 0, true);
+          expect(controller.summary.correctStrokePaths[0].isNotEmpty, true);
           expect(controller.summary.correctStrokePaths[0], correctStroke00);
         });
 
@@ -283,10 +292,10 @@ void main() {
       late QuizSummary summary1;
       int nCalledOnQuizComplete1 = 0;
 
-      final onQuizComplete1 = (summary) {
+      void onQuizComplete1(QuizSummary summary) {
         summary1 = summary;
         nCalledOnQuizComplete1++;
-      };
+      }
 
       controller.addOnQuizCompleteCallback(onQuizComplete1);
 
@@ -319,10 +328,10 @@ void main() {
         late QuizSummary summary2;
         int nCalledOnQuizComplete2 = 0;
 
-        final onQuizComplete2 = (summary) {
+        void onQuizComplete2(QuizSummary summary) {
           summary2 = summary;
           nCalledOnQuizComplete2++;
-        };
+        }
 
         controller.addOnQuizCompleteCallback(onQuizComplete2);
 
@@ -345,9 +354,9 @@ void main() {
           () {
         int wrongStroke = -1;
 
-        final onWrongStroke = (iStroke) {
+        void onWrongStroke(int iStroke) {
           wrongStroke = iStroke;
-        };
+        }
 
         controller.addOnWrongStrokeCallback(onWrongStroke);
 
@@ -365,9 +374,9 @@ void main() {
           () {
         int correctStroke = -1;
 
-        final onCorrectStroke = (iStroke) {
+        void onCorrectStroke(int iStroke) {
           correctStroke = iStroke;
-        };
+        }
 
         controller.addOnCorrectStrokeCallback(onCorrectStroke);
 

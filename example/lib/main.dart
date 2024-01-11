@@ -14,10 +14,11 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        theme: ThemeData(
-          textTheme: Theme.of(context).textTheme.apply(fontSizeFactor: 1.2),
-        ),
-        home: HomePage());
+      theme: ThemeData(
+        textTheme: Theme.of(context).textTheme.apply(fontSizeFactor: 1.2),
+      ),
+      home: HomePage(),
+    );
   }
 }
 
@@ -36,7 +37,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   void initState() {
     super.initState();
 
-    _animationController = _loadStrokeOrder("永");
+    _animationController = _loadStrokeOrder('永');
   }
 
   @override
@@ -46,14 +47,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Future<StrokeOrderAnimationController> _loadStrokeOrder(
-      String character) async {
+    String character,
+  ) async {
     return getStrokeOrder(character, _httpClient).then((value) {
       final controller = StrokeOrderAnimationController(
         value,
         this,
         onQuizCompleteCallback: (summary) {
           Fluttertoast.showToast(
-              msg: "Quiz finished. ${summary.nTotalMistakes} mistakes");
+            msg: 'Quiz finished. ${summary.nTotalMistakes} mistakes',
+          );
 
           setState(() {});
         },
@@ -74,7 +77,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               SizedBox(height: 50),
               _buildCharacterInputField(),
               SizedBox(height: 50),
-              _buildStrokeOrderAnimationAndControls()
+              _buildStrokeOrderAnimationAndControls(),
             ],
           ),
         ),
@@ -106,7 +109,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             ),
           ],
         ),
-        SelectableText("Examples: ${["永", "你", "㼌", "丸", "亟", "罵"].join(', ')}")
+        SelectableText(
+          "Examples: ${["永", "你", "㼌", "丸", "亟", "罵"].join(', ')}",
+        ),
       ],
     );
   }
@@ -120,7 +125,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       _textController.text = value.characters.last;
       // Move cursor to end
       _textController.selection = TextSelection.fromPosition(
-          TextPosition(offset: _textController.text.length));
+        TextPosition(offset: _textController.text.length),
+      );
     }
 
     setState(() {
@@ -141,7 +147,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             child: Column(
               children: [
                 _buildStrokeOrderAnimation(snapshot.data!),
-                _buildAnimationControls(snapshot.data!)
+                _buildAnimationControls(snapshot.data!),
               ],
             ),
           );
@@ -193,8 +199,8 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                     setState(() {});
                   },
             child: controller.isAnimating
-                ? Text("Stop animation")
-                : Text("Start animation"),
+                ? Text('Stop animation')
+                : Text('Start animation'),
           ),
           MaterialButton(
             onPressed: () {
@@ -205,61 +211,61 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               setState(() {});
             },
             child:
-                controller.isQuizzing ? Text("Stop quiz") : Text("Start quiz"),
+                controller.isQuizzing ? Text('Stop quiz') : Text('Start quiz'),
           ),
           MaterialButton(
             onPressed: controller.isQuizzing
                 ? null
                 : _setStateAfter(controller.nextStroke),
-            child: Text("Next stroke"),
+            child: Text('Next stroke'),
           ),
           MaterialButton(
             onPressed: controller.isQuizzing
                 ? null
                 : _setStateAfter(controller.previousStroke),
-            child: Text("Previous stroke"),
+            child: Text('Previous stroke'),
           ),
           MaterialButton(
             onPressed: controller.isQuizzing
                 ? null
                 : _setStateAfter(controller.showFullCharacter),
-            child: Text("Show full character"),
+            child: Text('Show full character'),
           ),
           MaterialButton(
             onPressed: _setStateAfter(controller.reset),
-            child: Text("Reset"),
+            child: Text('Reset'),
           ),
           MaterialButton(
             onPressed: _setStateAfter(() {
               controller.setShowOutline(!controller.showOutline);
             }),
             child: controller.showOutline
-                ? Text("Hide outline")
-                : Text("Show Outline"),
+                ? Text('Hide outline')
+                : Text('Show Outline'),
           ),
           MaterialButton(
             onPressed: _setStateAfter(() {
               controller.setShowMedian(!controller.showMedian);
             }),
             child: controller.showMedian
-                ? Text("Hide medians")
-                : Text("Show medians"),
+                ? Text('Hide medians')
+                : Text('Show medians'),
           ),
           MaterialButton(
             onPressed: _setStateAfter(() {
               controller.setHighlightRadical(!controller.highlightRadical);
             }),
             child: controller.highlightRadical
-                ? Text("Unhighlight radical")
-                : Text("Highlight radical"),
+                ? Text('Unhighlight radical')
+                : Text('Highlight radical'),
           ),
           MaterialButton(
             onPressed: _setStateAfter(() {
               controller.setShowUserStroke(!controller.showUserStroke);
             }),
             child: controller.showUserStroke
-                ? Text("Hide user strokes")
-                : Text("Show user strokes"),
+                ? Text('Hide user strokes')
+                : Text('Show user strokes'),
           ),
         ],
       ),
@@ -275,10 +281,10 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 }
 
 const copyRightDisclaimer =
-    "This package implements stroke order animations and quizzes of "
-    "Chinese characters based on the "
-    "Make me a Hanzi project "
-    "(https://github.com/skishore/makemeahanzi). "
-    "The stroke order data is available under the "
-    "ARPHIC public license "
-    "(https://www.freedesktop.org/wiki/Arphic_Public_License/).";
+    'This package implements stroke order animations and quizzes of '
+    'Chinese characters based on the '
+    'Make me a Hanzi project '
+    '(https://github.com/skishore/makemeahanzi). '
+    'The stroke order data is available under the '
+    'ARPHIC public license '
+    '(https://www.freedesktop.org/wiki/Arphic_Public_License/).';

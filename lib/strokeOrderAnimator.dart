@@ -1,20 +1,23 @@
+// Keep the file name as is to avoid breaking the package
+// ignore_for_file: file_names
+
 import 'dart:math';
 import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:stroke_order_animator/strokeOrderAnimationController.dart';
 
 /// A widget for displaying a stroke order diagram.
 /// Takes a `StrokeOrderAnimationController` as argument.
 class StrokeOrderAnimator extends StatefulWidget {
+  const StrokeOrderAnimator(this._controller, {super.key});
   final StrokeOrderAnimationController _controller;
 
-  StrokeOrderAnimator(this._controller, {Key? key}) : super(key: key);
-
   @override
-  _StrokeOrderAnimatorState createState() => _StrokeOrderAnimatorState();
+  StrokeOrderAnimatorState createState() => StrokeOrderAnimatorState();
 }
 
-class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
+class StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
   List<Offset?> _points = <Offset>[];
 
   @override
@@ -27,8 +30,8 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
     return GestureDetector(
       onPanUpdate: (DragUpdateDetails details) {
         setState(() {
-          RenderBox box = context.findRenderObject() as RenderBox;
-          Offset point = box.globalToLocal(details.globalPosition);
+          final RenderBox box = context.findRenderObject()! as RenderBox;
+          final Offset point = box.globalToLocal(details.globalPosition);
 
           if (point.dx >= 0 &&
               point.dx <= box.size.width &&
@@ -75,30 +78,34 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
               width: 1024,
               height: 1024,
               child: CustomPaint(
-                  painter: StrokePainter(widget._controller.strokes[index],
-                      showStroke: widget._controller.showStroke &&
-                          index < widget._controller.currentStroke,
-                      strokeColor: strokeColor,
-                      showOutline: widget._controller.showOutline,
-                      outlineColor: widget._controller.outlineColor,
-                      showMedian: widget._controller.showMedian,
-                      medianColor: widget._controller.medianColor,
-                      animate: animate,
-                      animation: animationController,
-                      median: widget._controller.medians[index])),
+                painter: StrokePainter(
+                  widget._controller.strokes[index],
+                  showStroke: widget._controller.showStroke &&
+                      index < widget._controller.currentStroke,
+                  strokeColor: strokeColor,
+                  showOutline: widget._controller.showOutline,
+                  outlineColor: widget._controller.outlineColor,
+                  showMedian: widget._controller.showMedian,
+                  medianColor: widget._controller.medianColor,
+                  animate: animate,
+                  animation: animationController,
+                  median: widget._controller.medians[index],
+                ),
+              ),
             );
           }),
           if (widget._controller.showUserStroke)
             ...paintCorrectStrokes(
-                widget._controller.summary.correctStrokePaths,
-                brushColor: widget._controller.brushColor,
-                brushWidth: widget._controller.brushWidth),
+              widget._controller.summary.correctStrokePaths,
+              brushColor: widget._controller.brushColor,
+              brushWidth: widget._controller.brushWidth,
+            ),
           if (widget._controller.isQuizzing)
-            Container(
-              child: CustomPaint(
-                painter: Brush(_points,
-                    brushColor: widget._controller.brushColor,
-                    brushWidth: widget._controller.brushWidth),
+            CustomPaint(
+              painter: Brush(
+                _points,
+                brushColor: widget._controller.brushColor,
+                brushWidth: widget._controller.brushWidth,
               ),
             ),
         ],
@@ -106,20 +113,21 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
     );
   }
 
-  List<Container> paintCorrectStrokes(List<List<Offset>> correctStrokePaths,
-      {Color brushColor = Colors.black, double brushWidth = 8}) {
-    final List<Container> brushStrokes = [];
+  List<CustomPaint> paintCorrectStrokes(
+    List<List<Offset>> correctStrokePaths, {
+    Color brushColor = Colors.black,
+    double brushWidth = 8,
+  }) {
+    final List<CustomPaint> brushStrokes = [];
 
-    for (var strokePath in correctStrokePaths) {
+    for (final strokePath in correctStrokePaths) {
       if (strokePath.isNotEmpty) {
         brushStrokes.add(
-          Container(
-            child: CustomPaint(
-              painter: Brush(
-                strokePath,
-                brushColor: brushColor,
-                brushWidth: brushWidth,
-              ),
+          CustomPaint(
+            painter: Brush(
+              strokePath,
+              brushColor: brushColor,
+              brushWidth: brushWidth,
             ),
           ),
         );
@@ -131,6 +139,18 @@ class _StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
 }
 
 class StrokePainter extends CustomPainter {
+  StrokePainter(
+    this.strokeOutlinePath, {
+    this.showStroke = true,
+    this.strokeColor = Colors.grey,
+    this.showOutline = false,
+    this.outlineColor = Colors.black,
+    this.showMedian = false,
+    this.medianColor = Colors.black,
+    this.animate = false,
+    this.animation,
+    this.median = const [],
+  }) : super(repaint: animation);
   // If the stroke should be animated, an animation and the median have to be provided
   final bool animate;
   final Animation<double>? animation;
@@ -148,30 +168,19 @@ class StrokePainter extends CustomPainter {
 
   Path visibleStroke = Path();
 
-  StrokePainter(
-    this.strokeOutlinePath, {
-    this.showStroke = true,
-    this.strokeColor = Colors.grey,
-    this.showOutline = false,
-    this.outlineColor = Colors.black,
-    this.showMedian = false,
-    this.medianColor = Colors.black,
-    this.animate = false,
-    this.animation,
-    this.median = const [],
-  }) : super(repaint: animation);
-
   @override
   void paint(Canvas canvas, Size size) {
     if (strokeStart < 0) {
       // Calculate the points on strokeOutlinePath that are closest to the start and end points of the median
       strokeStart = getClosestPointOnPathAsDistanceOnPath(
-          strokeOutlinePath, median.first);
+        strokeOutlinePath,
+        median.first,
+      );
       strokeEnd =
           getClosestPointOnPathAsDistanceOnPath(strokeOutlinePath, median.last);
     }
 
-    var strokePaint = Paint()
+    final strokePaint = Paint()
       ..color = strokeColor
       ..style = PaintingStyle.fill;
 
@@ -179,22 +188,24 @@ class StrokePainter extends CustomPainter {
       if (strokeStart >= 0 && strokeEnd >= 0) {
         // Split the original path into two paths that follow the outline
         // of the stroke from strokeStart to strokeEnd clockwise and counter-clockwise
-        List<Path> contourPaths =
+        final List<Path> contourPaths =
             extractContourPaths(strokeOutlinePath, strokeStart, strokeEnd);
 
         // Go on the first contourPath first, then jump over to the second path and go back to the start
         final lenFirstPath = contourPaths.first.computeMetrics().first.length;
         final lenSecondPath = contourPaths.last.computeMetrics().first.length;
 
-        Path finalOutlinePath = contourPaths.first
+        final Path finalOutlinePath = contourPaths.first
             .computeMetrics()
             .first
             .extractPath(0, (animation?.value ?? 1) * lenFirstPath);
         finalOutlinePath.extendWithPath(
-            contourPaths.last.computeMetrics().first.extractPath(
+          contourPaths.last.computeMetrics().first.extractPath(
                 lenSecondPath - (animation?.value ?? 1) * lenSecondPath,
-                lenSecondPath),
-            Offset(0, 0));
+                lenSecondPath,
+              ),
+          Offset.zero,
+        );
 
         canvas.drawPath(finalOutlinePath, strokePaint);
       }
@@ -203,7 +214,7 @@ class StrokePainter extends CustomPainter {
     }
 
     if (showOutline) {
-      var borderPaint = Paint()
+      final borderPaint = Paint()
         ..color = outlineColor
         ..strokeWidth = 2.0
         ..style = PaintingStyle.stroke;
@@ -212,16 +223,17 @@ class StrokePainter extends CustomPainter {
 
     if (showMedian) {
       final medianPath = Path();
-      medianPath.moveTo(median[0].dx.toDouble(), median[0].dy.toDouble());
-      for (var point in median) {
-        medianPath.lineTo(point.dx.toDouble(), point.dy.toDouble());
+      medianPath.moveTo(median[0].dx, median[0].dy);
+      for (final point in median) {
+        medianPath.lineTo(point.dx, point.dy);
       }
       canvas.drawPath(
-          medianPath,
-          Paint()
-            ..style = PaintingStyle.stroke
-            ..strokeWidth = 2.0
-            ..color = medianColor);
+        medianPath,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2.0
+          ..color = medianColor,
+      );
     }
   }
 
@@ -230,7 +242,10 @@ class StrokePainter extends CustomPainter {
 }
 
 List<Path> extractContourPaths(
-    Path strokeOutlinePath, double strokeStartLength, double strokeEndLength) {
+  Path strokeOutlinePath,
+  double strokeStartLength,
+  double strokeEndLength,
+) {
   Path path1 = Path();
   Path path2 = Path();
 
@@ -240,10 +255,15 @@ List<Path> extractContourPaths(
     path1 = metrics.extractPath(strokeStartLength, strokeEndLength);
     path2 = metrics.extractPath(strokeEndLength, metrics.length);
     path2.extendWithPath(
-        metrics.extractPath(0, strokeStartLength), Offset(0, 0));
+      metrics.extractPath(0, strokeStartLength),
+      Offset.zero,
+    );
   } else {
     path1 = metrics.extractPath(strokeStartLength, metrics.length);
-    path1.extendWithPath(metrics.extractPath(0, strokeEndLength), Offset(0, 0));
+    path1.extendWithPath(
+      metrics.extractPath(0, strokeEndLength),
+      Offset.zero,
+    );
     path2 = metrics.extractPath(strokeEndLength, strokeStartLength);
   }
 
@@ -252,13 +272,13 @@ List<Path> extractContourPaths(
 }
 
 double getClosestPointOnPathAsDistanceOnPath(Path path, Offset queryPoint) {
-  PathMetric metrics = path.computeMetrics().toList()[0];
+  final PathMetric metrics = path.computeMetrics().toList()[0];
 
-  int nSteps = 100;
-  double pathLength = metrics.length;
-  double stepSize = pathLength / nSteps;
+  const int nSteps = 100;
+  final double pathLength = metrics.length;
+  final double stepSize = pathLength / nSteps;
 
-  List<Offset> pointsOnPath = [];
+  final List<Offset> pointsOnPath = [];
 
   double minDistance = double.infinity;
 
@@ -289,23 +309,23 @@ double distance2D(Offset p, Offset q) {
 }
 
 class Brush extends CustomPainter {
-  final List<Offset?> points;
-  final Color brushColor;
-  final double brushWidth;
-
   Brush(
     this.points, {
     this.brushColor = Colors.black,
     this.brushWidth = 8.0,
   });
+  final List<Offset?> points;
+  final Color brushColor;
+  final double brushWidth;
 
   @override
   bool shouldRepaint(Brush oldDelegate) {
     return oldDelegate.points != points;
   }
 
+  @override
   void paint(Canvas canvas, Size size) {
-    Paint paint = Paint()
+    final Paint paint = Paint()
       ..color = brushColor
       ..strokeCap = StrokeCap.round
       ..strokeWidth = brushWidth;
