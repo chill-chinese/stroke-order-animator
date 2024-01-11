@@ -29,6 +29,6 @@ void main() {
         () async => await getStrokeOrder("a", client),
         throwsA(predicate((e) =>
             e is Exception &&
-            e.toString() == "Exception: Failed to get stroke order for a")));
+            e.toString() == "Exception: Failed to get stroke order for 'a'")));
   });
 }

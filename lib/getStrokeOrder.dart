@@ -8,7 +8,7 @@ Future<String> getStrokeOrder(String character, Client client) async {
   final response = await client.get(url);
 
   if (response.statusCode != 200) {
-    throw Exception("Failed to get stroke order for $character");
+    throw Exception("Failed to get stroke order for '$character'");
   }
 
   return response.body;
