@@ -85,14 +85,26 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget _buildCharacterInputField() {
     return Column(
       children: [
-        TextField(
-          controller: _textController,
-          decoration: InputDecoration(
-            constraints: BoxConstraints(maxWidth: 320),
-            border: OutlineInputBorder(),
-            hintText: 'Enter a character',
-          ),
-          onChanged: _onTextFieldChanged,
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TextField(
+              controller: _textController,
+              decoration: InputDecoration(
+                constraints: BoxConstraints(maxWidth: 320),
+                border: OutlineInputBorder(),
+                hintText: 'Enter a character',
+              ),
+              onChanged: _onTextFieldChanged,
+            ),
+            Tooltip(
+              message: copyRightDisclaimer,
+              child: Padding(
+                padding: EdgeInsets.only(left: 10),
+                child: Icon(Icons.help_outline),
+              ),
+            ),
+          ],
         ),
         SelectableText("Examples: ${["永", "你", "㼌", "丸", "亟", "罵"].join(', ')}")
       ],
@@ -261,3 +273,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     };
   }
 }
+
+const copyRightDisclaimer =
+    "This package implements stroke order animations and quizzes of "
+    "Chinese characters based on the "
+    "Make me a Hanzi project "
+    "(https://github.com/skishore/makemeahanzi). "
+    "The stroke order data is available under the "
+    "ARPHIC public license "
+    "(https://www.freedesktop.org/wiki/Arphic_Public_License/).";
