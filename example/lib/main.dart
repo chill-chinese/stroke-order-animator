@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:http/http.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:stroke_order_animator/getStrokeOrder.dart';
 import 'package:stroke_order_animator/strokeOrderAnimationController.dart';
@@ -13,7 +13,11 @@ void main() {
 class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: HomePage());
+    return MaterialApp(
+        theme: ThemeData(
+          textTheme: Theme.of(context).textTheme.apply(fontSizeFactor: 1.2),
+        ),
+        home: HomePage());
   }
 }
 
@@ -23,160 +27,139 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
-  final _client = Client();
-  final PageController _pageController = PageController();
-  int _selectedIndex = 0;
+  final _httpClient = http.Client();
+  final _textController = TextEditingController();
 
-  static const characters = ["永", "你", "㼌", "丸", "亟", "罵"];
-
-  List<StrokeOrderAnimationController?> _strokeOrderAnimationControllers =
-      List.filled(characters.length, null);
+  late Future<StrokeOrderAnimationController> _animationController;
 
   @override
   void initState() {
     super.initState();
-    _loadStrokeOrders();
-  }
 
-  void _loadStrokeOrders() async {
-    for (var i = 0; i < characters.length; i++) {
-      getStrokeOrder(characters[i], _client).then((value) {
-        final animationController = StrokeOrderAnimationController(
-          value,
-          this,
-          onQuizCompleteCallback: (summary) {
-            Fluttertoast.showToast(
-                msg: [
-              "Quiz finished. ",
-              summary.nTotalMistakes.toString(),
-              " mistakes"
-            ].join());
-
-            setState(() {});
-          },
-        );
-        _strokeOrderAnimationControllers[i] = animationController;
-
-        setState(() {});
-      });
-    }
+    _animationController = _loadStrokeOrder("永");
   }
 
   @override
   void dispose() {
-    _client.close();
-    _pageController.dispose();
-    for (var controller in _strokeOrderAnimationControllers) {
-      controller?.dispose();
-    }
+    _httpClient.close();
     super.dispose();
+  }
+
+  Future<StrokeOrderAnimationController> _loadStrokeOrder(
+      String character) async {
+    return getStrokeOrder(character, _httpClient).then((value) {
+      final controller = StrokeOrderAnimationController(
+        value,
+        this,
+        onQuizCompleteCallback: (summary) {
+          Fluttertoast.showToast(
+              msg: "Quiz finished. ${summary.nTotalMistakes} mistakes");
+
+          setState(() {});
+        },
+      );
+
+      return controller;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Character Animator")),
-      body: _buildContent(),
-    );
-  }
-
-  Center _buildContent() {
-    final _activeController = _strokeOrderAnimationControllers[_selectedIndex];
-    return Center(
-      child: SizedBox(
-        width: 500,
-        child: Column(
-          children: [
-            _buildPreviousAndNextButton(_activeController),
-            _buildStrokeOrderAnimation(_activeController),
-            _buildAnimationControls(_activeController),
-          ].nonNulls.toList(),
+      body: Center(
+        child: SizedBox(
+          width: 500,
+          child: Column(
+            children: [
+              SizedBox(height: 50),
+              _buildCharacterInputField(),
+              SizedBox(height: 50),
+              _buildStrokeOrderAnimationAndControls()
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Row _buildPreviousAndNextButton(StrokeOrderAnimationController? controller) {
-    final previousAndNextButton = Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+  Widget _buildCharacterInputField() {
+    return Column(
       children: [
-        MaterialButton(
-          onPressed: () {
-            if (controller == null || !controller.isQuizzing) {
-              _pageController.previousPage(
-                duration: Duration(milliseconds: 500),
-                curve: Curves.ease,
-              );
-            }
-          },
-          child: Text("Previous character"),
+        TextField(
+          controller: _textController,
+          decoration: InputDecoration(
+            constraints: BoxConstraints(maxWidth: 320),
+            border: OutlineInputBorder(),
+            hintText: 'Enter a character',
+          ),
+          onChanged: _onTextFieldChanged,
         ),
-        Spacer(),
-        MaterialButton(
-          onPressed: () {
-            if (controller == null || !controller.isQuizzing) {
-              _pageController.nextPage(
-                duration: Duration(milliseconds: 500),
-                curve: Curves.ease,
-              );
-            }
-          },
-          child: Text("Next character"),
-        ),
+        SelectableText("Examples: ${["永", "你", "㼌", "丸", "亟", "罵"].join(', ')}")
       ],
     );
-    return previousAndNextButton;
   }
 
-  Expanded _buildStrokeOrderAnimation(
-    StrokeOrderAnimationController? activeController,
-  ) {
-    return Expanded(
-      child: PageView(
-        physics: activeController?.isQuizzing ?? false
-            ? NeverScrollableScrollPhysics()
-            : ScrollPhysics(),
-        controller: _pageController,
-        scrollDirection: Axis.horizontal,
-        children: List.generate(
-          _strokeOrderAnimationControllers.length,
-          (index) =>
-              ChangeNotifierProvider<StrokeOrderAnimationController?>.value(
-            value: _strokeOrderAnimationControllers[index],
-            child: Consumer<StrokeOrderAnimationController?>(
-              builder: (context, controller, child) {
-                return FittedBox(
-                  child: controller == null
-                      ? Text(
-                          "Loading stroke order data for '" +
-                              characters[index] +
-                              "'",
-                        )
-                      : StrokeOrderAnimator(controller, key: UniqueKey()),
-                );
-              },
+  void _onTextFieldChanged(String value) {
+    if (value.characters.isEmpty) {
+      return;
+    }
+
+    if (value.characters.length > 1) {
+      _textController.text = value.characters.last;
+      // Move cursor to end
+      _textController.selection = TextSelection.fromPosition(
+          TextPosition(offset: _textController.text.length));
+    }
+
+    setState(() {
+      _animationController = _loadStrokeOrder(_textController.text);
+    });
+  }
+
+  FutureBuilder<StrokeOrderAnimationController>
+      _buildStrokeOrderAnimationAndControls() {
+    return FutureBuilder(
+      future: _animationController,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return CircularProgressIndicator();
+        }
+        if (snapshot.hasData) {
+          return Expanded(
+            child: Column(
+              children: [
+                _buildStrokeOrderAnimation(snapshot.data!),
+                _buildAnimationControls(snapshot.data!)
+              ],
             ),
-          ),
+          );
+        }
+        if (snapshot.hasError) {
+          return Text(snapshot.error.toString());
+        }
+
+        return SizedBox.shrink();
+      },
+    );
+  }
+
+  Widget _buildStrokeOrderAnimation(StrokeOrderAnimationController controller) {
+    return SizedBox.square(
+      dimension: 350,
+      child: ChangeNotifierProvider<StrokeOrderAnimationController>.value(
+        value: controller,
+        child: Consumer<StrokeOrderAnimationController>(
+          builder: (context, controller, child) {
+            return FittedBox(
+              child: StrokeOrderAnimator(controller, key: UniqueKey()),
+            );
+          },
         ),
-        onPageChanged: (index) => {
-          setState(
-            () {
-              _strokeOrderAnimationControllers[_selectedIndex]?.stopAnimation();
-              _selectedIndex = index;
-            },
-          ),
-        },
       ),
     );
   }
 
-  Flexible? _buildAnimationControls(
-    StrokeOrderAnimationController? controller,
-  ) {
-    if (controller == null) {
-      return null;
-    }
-
+  Flexible _buildAnimationControls(StrokeOrderAnimationController controller) {
     return Flexible(
       child: GridView(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -187,27 +170,25 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         primary: false,
         children: <Widget>[
           MaterialButton(
-            onPressed: !controller.isQuizzing
-                ? () {
-                    if (!controller.isAnimating) {
-                      controller.startAnimation();
-                    } else {
+            onPressed: controller.isQuizzing
+                ? null
+                : () {
+                    if (controller.isAnimating) {
                       controller.stopAnimation();
+                    } else {
+                      controller.startAnimation();
                     }
                     setState(() {});
-                  }
-                : null,
+                  },
             child: controller.isAnimating
                 ? Text("Stop animation")
                 : Text("Start animation"),
           ),
           MaterialButton(
             onPressed: () {
-              if (!controller.isQuizzing) {
-                controller.startQuiz();
-              } else {
-                controller.stopQuiz();
-              }
+              controller.isQuizzing
+                  ? controller.stopQuiz()
+                  : controller.startQuiz();
 
               setState(() {});
             },
@@ -215,63 +196,55 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                 controller.isQuizzing ? Text("Stop quiz") : Text("Start quiz"),
           ),
           MaterialButton(
-            onPressed: !controller.isQuizzing
-                ? () {
-                    controller.nextStroke();
-                  }
-                : null,
+            onPressed: controller.isQuizzing
+                ? null
+                : _setStateAfter(controller.nextStroke),
             child: Text("Next stroke"),
           ),
           MaterialButton(
-            onPressed: !controller.isQuizzing
-                ? () {
-                    controller.previousStroke();
-                  }
-                : null,
+            onPressed: controller.isQuizzing
+                ? null
+                : _setStateAfter(controller.previousStroke),
             child: Text("Previous stroke"),
           ),
           MaterialButton(
-            onPressed: !controller.isQuizzing
-                ? () {
-                    controller.showFullCharacter();
-                  }
-                : null,
+            onPressed: controller.isQuizzing
+                ? null
+                : _setStateAfter(controller.showFullCharacter),
             child: Text("Show full character"),
           ),
           MaterialButton(
-            onPressed: () {
-              controller.reset();
-            },
+            onPressed: _setStateAfter(controller.reset),
             child: Text("Reset"),
           ),
           MaterialButton(
-            onPressed: () {
+            onPressed: _setStateAfter(() {
               controller.setShowOutline(!controller.showOutline);
-            },
+            }),
             child: controller.showOutline
                 ? Text("Hide outline")
                 : Text("Show Outline"),
           ),
           MaterialButton(
-            onPressed: () {
+            onPressed: _setStateAfter(() {
               controller.setShowMedian(!controller.showMedian);
-            },
+            }),
             child: controller.showMedian
                 ? Text("Hide medians")
                 : Text("Show medians"),
           ),
           MaterialButton(
-            onPressed: () {
+            onPressed: _setStateAfter(() {
               controller.setHighlightRadical(!controller.highlightRadical);
-            },
+            }),
             child: controller.highlightRadical
                 ? Text("Unhighlight radical")
                 : Text("Highlight radical"),
           ),
           MaterialButton(
-            onPressed: () {
+            onPressed: _setStateAfter(() {
               controller.setShowUserStroke(!controller.showUserStroke);
-            },
+            }),
             child: controller.showUserStroke
                 ? Text("Hide user strokes")
                 : Text("Show user strokes"),
@@ -279,5 +252,12 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
         ],
       ),
     );
+  }
+
+  void Function() _setStateAfter(void Function() f) {
+    return () {
+      f();
+      setState(() {});
+    };
   }
 }
