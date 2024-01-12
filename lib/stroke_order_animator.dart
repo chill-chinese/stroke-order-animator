@@ -1,6 +1,3 @@
-// Keep the file name as is to avoid breaking the package
-// ignore_for_file: file_names
-
 import 'dart:math';
 import 'dart:ui';
 
