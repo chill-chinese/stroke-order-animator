@@ -4,8 +4,8 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:stroke_order_animator/stroke_order_animator.dart';
 
+import '../test_strokes.dart';
 import 'download_stroke_order_test.mocks.dart';
-import 'test_strokes.dart';
 
 @GenerateMocks([http.Client])
 void main() {
