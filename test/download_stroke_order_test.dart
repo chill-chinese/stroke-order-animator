@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
-import 'package:stroke_order_animator/download_stroke_order.dart';
+import 'package:stroke_order_animator/stroke_order_animator.dart';
 
 import 'download_stroke_order_test.mocks.dart';
 import 'test_strokes.dart';

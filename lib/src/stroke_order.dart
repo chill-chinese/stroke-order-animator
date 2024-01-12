@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/rendering.dart';
-import 'package:stroke_order_animator/download_stroke_order.dart';
+import 'package:stroke_order_animator/stroke_order_animator.dart';
 import 'package:svg_path_parser/svg_path_parser.dart';
 
 /// Represents the stroke order of a character.

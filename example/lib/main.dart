@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
-import 'package:stroke_order_animator/download_stroke_order.dart';
-import 'package:stroke_order_animator/stroke_order.dart';
-import 'package:stroke_order_animator/stroke_order_animation_controller.dart';
 import 'package:stroke_order_animator/stroke_order_animator.dart';
 
 void main() {
