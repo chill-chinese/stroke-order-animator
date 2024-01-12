@@ -1,5 +1,3 @@
-// ignore_for_file: avoid_dynamic_calls, argument_type_not_assignable, return_of_invalid_type_from_closure
-
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:stroke_order_animator/stroke_order.dart';
@@ -29,9 +27,9 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     double brushWidth = 8.0,
     int hintAfterStrokes = 3,
     Color hintColor = Colors.lightBlueAccent,
-    Function? onQuizCompleteCallback,
-    Function? onWrongStrokeCallback,
-    Function? onCorrectStrokeCallback,
+    void Function(QuizSummary)? onQuizCompleteCallback,
+    void Function(int)? onWrongStrokeCallback,
+    void Function(int)? onCorrectStrokeCallback,
   })  : _strokeColor = strokeColor,
         _showStroke = showStroke,
         _showOutline = showOutline,
@@ -64,9 +62,15 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     _setCurrentStroke(0);
     _summary = QuizSummary(strokeOrder.nStrokes);
 
-    addOnQuizCompleteCallback(onQuizCompleteCallback);
-    addOnWrongStrokeCallback(onWrongStrokeCallback);
-    addOnCorrectStrokeCallback(onCorrectStrokeCallback);
+    if (onQuizCompleteCallback != null) {
+      addOnQuizCompleteCallback(onQuizCompleteCallback);
+    }
+    if (onWrongStrokeCallback != null) {
+      addOnWrongStrokeCallback(onWrongStrokeCallback);
+    }
+    if (onCorrectStrokeCallback != null) {
+      addOnCorrectStrokeCallback(onCorrectStrokeCallback);
+    }
 
     notifyListeners();
   }
@@ -96,9 +100,9 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   QuizSummary _summary = QuizSummary(0);
   QuizSummary get summary => _summary;
 
-  final List<Function> _onQuizCompleteCallbacks = [];
-  final List<Function> _onWrongStrokeCallbacks = [];
-  final List<Function> _onCorrectStrokeCallbacks = [];
+  final List<void Function(QuizSummary)> _onQuizCompleteCallbacks = [];
+  final List<void Function(int)> _onWrongStrokeCallbacks = [];
+  final List<void Function(int)> _onCorrectStrokeCallbacks = [];
 
   bool _showStroke;
   bool _showOutline;
@@ -337,22 +341,16 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     );
   }
 
-  void addOnQuizCompleteCallback(Function? onQuizCompleteCallback) {
-    if (onQuizCompleteCallback != null) {
-      _onQuizCompleteCallbacks.add(onQuizCompleteCallback);
-    }
+  void addOnQuizCompleteCallback(void Function(QuizSummary) callback) {
+    _onQuizCompleteCallbacks.add(callback);
   }
 
-  void addOnWrongStrokeCallback(Function? onWrongStrokeCallback) {
-    if (onWrongStrokeCallback != null) {
-      _onWrongStrokeCallbacks.add(onWrongStrokeCallback);
-    }
+  void addOnWrongStrokeCallback(void Function(int) callback) {
+    _onWrongStrokeCallbacks.add(callback);
   }
 
-  void addOnCorrectStrokeCallback(Function? onCorrectStrokeCallback) {
-    if (onCorrectStrokeCallback != null) {
-      _onCorrectStrokeCallbacks.add(onCorrectStrokeCallback);
-    }
+  void addOnCorrectStrokeCallback(void Function(int) callback) {
+    _onCorrectStrokeCallbacks.add(callback);
   }
 
   void checkStroke(List<Offset?> rawStroke) {
