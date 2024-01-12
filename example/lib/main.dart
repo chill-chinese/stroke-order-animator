@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:stroke_order_animator/getStrokeOrder.dart';
 import 'package:stroke_order_animator/strokeOrderAnimationController.dart';
 import 'package:stroke_order_animator/strokeOrderAnimator.dart';
+import 'package:stroke_order_animator/stroke_order.dart';
 
 void main() {
   runApp(App());
@@ -51,7 +52,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   ) async {
     return getStrokeOrder(character, _httpClient).then((value) {
       final controller = StrokeOrderAnimationController(
-        value,
+        StrokeOrder(value),
         this,
         onQuizCompleteCallback: (summary) {
           Fluttertoast.showToast(

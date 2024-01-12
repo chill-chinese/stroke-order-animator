@@ -13,7 +13,7 @@ void main() {
     final client = MockClient();
 
     when(client.get(any)).thenAnswer((_) async {
-      return http.Response(strokeOrders[0], 200);
+      return http.Response(strokeOrderJsons['永']!, 200);
     });
     await getStrokeOrder('永', client);
 

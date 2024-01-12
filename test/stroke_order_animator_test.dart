@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:stroke_order_animator/strokeOrderAnimationController.dart';
 import 'package:stroke_order_animator/strokeOrderAnimator.dart';
+import 'package:stroke_order_animator/stroke_order.dart';
 
 import 'test_strokes.dart';
 
@@ -39,8 +40,10 @@ void main() {
     testWidgets(
         'There are brush strokes according to the number of correct strokes',
         (WidgetTester tester) async {
-      final controller =
-          StrokeOrderAnimationController(strokeOrders[0], tickerProvider);
+      final controller = StrokeOrderAnimationController(
+        StrokeOrder(strokeOrderJsons['永']!),
+        tickerProvider,
+      );
 
       controller.startQuiz();
       controller.setShowOutline(false);
@@ -63,31 +66,42 @@ void main() {
       // Initially empty
       Finder brushFinder = find.byType(CustomPaint);
       // There is one brush for every stroke and one more for the active stroke during drawing
-      expect(brushFinder, findsNWidgets(controller.nStrokes + 1));
+      expect(brushFinder, findsNWidgets(controller.strokeOrder.nStrokes + 1));
 
       // One correct stroke
       controller.checkStroke(correctStroke00);
       await tester.pump();
       brushFinder = find.byType(CustomPaint);
-      expect(brushFinder, findsNWidgets(controller.nStrokes + 1 + 1));
+      expect(
+        brushFinder,
+        findsNWidgets(controller.strokeOrder.nStrokes + 1 + 1),
+      );
 
       // One incorrect stroke
       controller.checkStroke(wrongStroke00);
       await tester.pump();
       brushFinder = find.byType(CustomPaint);
-      expect(brushFinder, findsNWidgets(controller.nStrokes + 1 + 1));
+      expect(
+        brushFinder,
+        findsNWidgets(controller.strokeOrder.nStrokes + 1 + 1),
+      );
 
       // One more correct stroke
       controller.checkStroke(correctStroke01);
       await tester.pump();
       brushFinder = find.byType(CustomPaint);
-      expect(brushFinder, findsNWidgets(controller.nStrokes + 1 + 2));
+      expect(
+        brushFinder,
+        findsNWidgets(controller.strokeOrder.nStrokes + 1 + 2),
+      );
     });
 
     testWidgets('Strokes stay on screen after quiz finished',
         (WidgetTester tester) async {
-      final controller =
-          StrokeOrderAnimationController(strokeOrders[5], tickerProvider);
+      final controller = StrokeOrderAnimationController(
+        StrokeOrder(strokeOrderJsonForQuizTests),
+        tickerProvider,
+      );
 
       controller.startQuiz();
       controller.setShowOutline(false);
@@ -113,13 +127,15 @@ void main() {
 
       await tester.pump();
       final brushFinder = find.byType(CustomPaint);
-      expect(brushFinder, findsNWidgets(controller.nStrokes + 3));
+      expect(brushFinder, findsNWidgets(controller.strokeOrder.nStrokes + 3));
     });
 
     testWidgets('Strokes stay on screen only if enabled',
         (WidgetTester tester) async {
-      final controller =
-          StrokeOrderAnimationController(strokeOrders[5], tickerProvider);
+      final controller = StrokeOrderAnimationController(
+        StrokeOrder(strokeOrderJsonForQuizTests),
+        tickerProvider,
+      );
 
       controller.startQuiz();
       controller.setShowOutline(false);
@@ -142,12 +158,15 @@ void main() {
 
       await tester.pump();
       Finder brushFinder = find.byType(CustomPaint);
-      expect(brushFinder, findsNWidgets(controller.nStrokes + 1));
+      expect(brushFinder, findsNWidgets(controller.strokeOrder.nStrokes + 1));
 
       controller.setShowUserStroke(true);
       await tester.pump();
       brushFinder = find.byType(CustomPaint);
-      expect(brushFinder, findsNWidgets(controller.nStrokes + 1 + 1));
+      expect(
+        brushFinder,
+        findsNWidgets(controller.strokeOrder.nStrokes + 1 + 1),
+      );
     });
   });
 }
