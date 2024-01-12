@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:stroke_order_animator/strokeOrderAnimator.dart';
 import 'package:stroke_order_animator/stroke_order.dart';
+import 'package:stroke_order_animator/stroke_order_animator.dart';
 
 /// A ChangeNotifier that controls the behavior of a stroke order diagram.
 /// It must be passed as an argument to a [StrokeOrderAnimator] that handles
