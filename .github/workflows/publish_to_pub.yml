@@ -14,9 +14,11 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: subosito/flutter-action@v2
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          cache: true
 
       - uses: dart-lang/setup-dart@v1
 
