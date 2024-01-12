@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
-import 'package:stroke_order_animator/getStrokeOrder.dart';
+import 'package:stroke_order_animator/download_stroke_order.dart';
 import 'package:stroke_order_animator/strokeOrderAnimationController.dart';
 import 'package:stroke_order_animator/strokeOrderAnimator.dart';
 import 'package:stroke_order_animator/stroke_order.dart';
@@ -50,7 +50,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Future<StrokeOrderAnimationController> _loadStrokeOrder(
     String character,
   ) async {
-    return getStrokeOrder(character, _httpClient).then((value) {
+    return downloadStrokeOrder(character, _httpClient).then((value) {
       final controller = StrokeOrderAnimationController(
         StrokeOrder(value),
         this,

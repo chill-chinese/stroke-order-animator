@@ -1,8 +1,6 @@
-// ignore_for_file: file_names
-
 import 'package:http/http.dart';
 
-Future<String> getStrokeOrder(String character, Client client) async {
+Future<String> downloadStrokeOrder(String character, Client client) async {
   const baseUrl = 'https://cdn.jsdelivr.net/npm/hanzi-writer-data@2.0.1/';
 
   final url = Uri.parse('$baseUrl$character.json');

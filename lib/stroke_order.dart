@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/rendering.dart';
-import 'package:stroke_order_animator/getStrokeOrder.dart';
+import 'package:stroke_order_animator/download_stroke_order.dart';
 import 'package:svg_path_parser/svg_path_parser.dart';
 
 /// Represents the stroke order of a character.
@@ -11,7 +11,7 @@ import 'package:svg_path_parser/svg_path_parser.dart';
 /// of the radical of the character ([radicalStrokeIndices]).
 /// The number of strokes is stored in [nStrokes].
 ///
-/// A JSON string retrieved via [getStrokeOrder] can be passed directly to
+/// A JSON string retrieved via [downloadStrokeOrder] can be passed directly to
 /// the constructor.
 class StrokeOrder {
   StrokeOrder(String strokeOrderJson) {
