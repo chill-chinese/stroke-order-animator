@@ -1,7 +1,7 @@
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stroke_order_animator/strokeOrderAnimationController.dart';
 import 'package:stroke_order_animator/stroke_order.dart';
+import 'package:stroke_order_animator/stroke_order_animation_controller.dart';
 
 import 'test_strokes.dart';
 

@@ -1,4 +1,4 @@
-// ignore_for_file: avoid_dynamic_calls, file_names, argument_type_not_assignable, return_of_invalid_type_from_closure
+// ignore_for_file: avoid_dynamic_calls, argument_type_not_assignable, return_of_invalid_type_from_closure
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
