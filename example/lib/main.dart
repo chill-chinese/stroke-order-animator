@@ -3,9 +3,9 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:stroke_order_animator/download_stroke_order.dart';
-import 'package:stroke_order_animator/strokeOrderAnimationController.dart';
 import 'package:stroke_order_animator/strokeOrderAnimator.dart';
 import 'package:stroke_order_animator/stroke_order.dart';
+import 'package:stroke_order_animator/stroke_order_animation_controller.dart';
 
 void main() {
   runApp(App());
