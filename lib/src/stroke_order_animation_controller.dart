@@ -3,12 +3,57 @@ import 'package:flutter/rendering.dart';
 import 'package:stroke_order_animator/src/distance_2_d.dart';
 import 'package:stroke_order_animator/stroke_order_animator.dart';
 
-/// A ChangeNotifier that controls the behavior of a stroke order diagram.
+/// A [ChangeNotifier] that controls the behavior of a stroke order diagram.
+///
 /// It must be passed as an argument to a [StrokeOrderAnimator] that handles
-/// the actual presentation of the diagram. It can be consumed by the
-/// [StrokeOrderAnimator] and an app to allow for synchronization of, e.g.,
-/// control buttons with the animations.
+/// the actual presentation of the diagram.
+/// It can additionally be consumed by an app to allow for
+/// synchronization of control buttons with the animations.
+/// In order to control animations, a [TickerProvider] must be passed to the
+/// controller, for example using a [TickerProviderStateMixin].
+///
+/// To better integrate quizzes, three callbacks can be either passed to the
+/// [StrokeOrderAnimationController] during instantiation or afterwards using
+/// the following methods:
+///
+/// * [StrokeOrderAnimationController.addOnWrongStrokeCallback]
+/// * [StrokeOrderAnimationController.addOnCorrectStrokeCallback]
+/// * [StrokeOrderAnimationController.addOnQuizCompleteCallback]
+///
+/// The `onQuizCompleteCallback` receives a [QuizSummary].
+/// The other two callbacks receive the index of the stroke that was written
+/// (in-)correctly. All indices are zero-based.
+///
+/// Check out [StrokeOrderAnimationController.new] for a list of attributes that
+/// control how the stroke order diagram is displayed and behaves.
+///
+/// A number of methods control the animation state:
+///
+/// * Start/stop animation
+/// * Start/stop quiz
+/// * Show next/previous stroke
+/// * Show full character
+/// * Reset animation/quiz
 class StrokeOrderAnimationController extends ChangeNotifier {
+  /// Creates a new [StrokeOrderAnimationController].
+  ///
+  /// A number of attributes can be set during initialization or via their
+  /// respective setters:
+  ///
+  /// * Animation speed of stroke animations and hints in quiz mode (try 3 and adjust from there)
+  /// * Whether to show/hide strokes
+  /// * Whether to show/hide outlines
+  /// * Whether to show/hide medians
+  /// * Whether to show/hide the correct strokes the user writes during a quiz
+  /// * Whether to highlight radicals
+  /// * Stroke color
+  /// * Outline color
+  /// * Median color
+  /// * Radical color
+  /// * Brush color in quiz mode
+  /// * Brush thickness in quiz mode
+  /// * Number of wrong strokes before showing a hint in quiz mode
+  /// * Hint color in quiz mode
   StrokeOrderAnimationController(
     this._strokeOrder,
     TickerProvider tickerProvider, {

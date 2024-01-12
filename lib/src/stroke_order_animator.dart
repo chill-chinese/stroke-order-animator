@@ -5,7 +5,13 @@ import 'package:stroke_order_animator/src/distance_2_d.dart';
 import 'package:stroke_order_animator/stroke_order_animator.dart';
 
 /// A widget for displaying a stroke order diagram.
-/// Takes a `StrokeOrderAnimationController` as argument.
+///
+/// Requires a [StrokeOrderAnimationController] that controls the animation.
+///
+/// Tip: When using the animations in a [PageView] or [ListView], it is
+/// recommended to use a unique key for every [StrokeOrderAnimator] and cancel
+/// the animation when the selected page changes in order to avoid broken
+/// animation behavior.
 class StrokeOrderAnimator extends StatefulWidget {
   const StrokeOrderAnimator(this._controller, {super.key});
   final StrokeOrderAnimationController _controller;
