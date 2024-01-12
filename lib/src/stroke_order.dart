@@ -5,11 +5,6 @@ import 'package:stroke_order_animator/stroke_order_animator.dart';
 import 'package:svg_path_parser/svg_path_parser.dart';
 
 /// Represents the stroke order of a character.
-/// A stroke order consists of the path information describing the outline of
-/// all strokes ([strokeOutlines]), a list of points describing the median of
-/// each stroke ([medians]), and a list of indices of the strokes that are part
-/// of the radical of the character ([radicalStrokeIndices]).
-/// The number of strokes is stored in [nStrokes].
 ///
 /// A JSON string retrieved via [downloadStrokeOrder] can be passed directly to
 /// the constructor.
@@ -29,9 +24,16 @@ class StrokeOrder {
     }
   }
 
+  /// Path information describing the outline of each strokes.
   late final List<Path> strokeOutlines;
+
+  /// List of points describing the median of each stroke.
   late final List<List<Offset>> medians;
+
+  /// Indices of the strokes that are part of the character's radical.
   late final List<int> radicalStrokeIndices;
+
+  /// The number of strokes required to write the character.
   late final int nStrokes;
 
   Map<String, dynamic> _parseJson(String strokeOrderJson) {
