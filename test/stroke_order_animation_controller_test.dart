@@ -1,6 +1,7 @@
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:stroke_order_animator/strokeOrderAnimationController.dart';
+import 'package:stroke_order_animator/stroke_order.dart';
 
 import 'test_strokes.dart';
 
@@ -8,117 +9,30 @@ void main() {
   const tickerProvider = TestVSync();
   debugSemanticsDisableAnimations = true;
 
-  group('Test stroke count and stroke order ', () {
-    final controllers = List.generate(
-      strokeOrders.length,
-      (index) =>
-          StrokeOrderAnimationController(strokeOrders[index], tickerProvider),
+  test('Assign new stroke order to existing controller', () {
+    final controller = StrokeOrderAnimationController(
+      StrokeOrder(strokeOrderJsons['永']!),
+      tickerProvider,
     );
 
-    test('Test stroke count and stroke order after initialization', () {
-      expect(controllers[0].nStrokes, 5);
-      expect(controllers[0].strokeOrder, strokeOrders[0]);
+    // Check that current stroke gets reset
+    controller.nextStroke();
+    expect(controller.currentStroke, 1);
+    controller.strokeOrder = StrokeOrder(strokeOrderJsons['你']!);
+    expect(controller.currentStroke, 0);
 
-      expect(controllers[1].nStrokes, 7);
-      expect(controllers[1].strokeOrder, strokeOrders[1]);
-
-      expect(controllers[2].nStrokes, 10);
-      expect(controllers[2].strokeOrder, strokeOrders[2]);
-
-      expect(controllers[3].nStrokes, 3);
-      expect(controllers[3].strokeOrder, strokeOrders[3]);
-
-      expect(controllers[4].nStrokes, 8);
-      expect(controllers[4].strokeOrder, strokeOrders[4]);
-
-      expect(controllers[5].nStrokes, 3);
-      expect(controllers[5].strokeOrder, strokeOrders[5]);
-    });
-
-    test('Test stroke count and stroke after setting new character', () {
-      controllers[0].setStrokeOrder(strokeOrders[1]);
-      expect(controllers[0].nStrokes, 7);
-      expect(controllers[0].strokeOrder, strokeOrders[1]);
-
-      controllers[1].setStrokeOrder(strokeOrders[2]);
-      expect(controllers[1].nStrokes, 10);
-      expect(controllers[1].strokeOrder, strokeOrders[2]);
-
-      controllers[2].setStrokeOrder(strokeOrders[3]);
-      expect(controllers[2].nStrokes, 3);
-      expect(controllers[2].strokeOrder, strokeOrders[3]);
-
-      controllers[3].setStrokeOrder(strokeOrders[4]);
-      expect(controllers[3].nStrokes, 8);
-      expect(controllers[3].strokeOrder, strokeOrders[4]);
-
-      controllers[4].setStrokeOrder(strokeOrders[5]);
-      expect(controllers[4].nStrokes, 3);
-      expect(controllers[4].strokeOrder, strokeOrders[5]);
-
-      controllers[5].setStrokeOrder(strokeOrders[0]);
-      expect(controllers[5].nStrokes, 5);
-      expect(controllers[5].strokeOrder, strokeOrders[0]);
-    });
-
-    test('Invalid JSON string throws exception', () {
-      expect(() => controllers[0].setStrokeOrder('...'), throwsFormatException);
-    });
-
-    test('Invalid strokes in JSON throw exceptions', () {
-      final invalidJSONs = [
-        // No strokes
-        "{'medians': [[[428, 824]]], 'radStrokes': [1, 2, 3, 4]}",
-        // Strokes not List of paths
-        "{'strokes': [5], 'medians': [[[428, 824]]], 'radStrokes': [1, 2, 3, 4]}",
-        // "{'strokes': ['5'],'medians': [[[0, 0]]], 'radStrokes': [0]}", // Missing strokes
-        // "{'strokes': ['5'], 'medians': [], 'radStrokes': [0]}"
-      ];
-
-      for (final invalidJSON in invalidJSONs) {
-        expect(
-          () => controllers[0].setStrokeOrder(invalidJSON),
-          throwsFormatException,
-        );
-      }
-    });
-
-    test('Invalid medians in JSON throw exceptions', () {
-      final invalidJSONs = [
-        // No medians
-        "{'strokes': ['M 440 788 Q 497 731 535 718 Q 553 717 562 732 Q 569 748 564 767 Q 546 815 477 828 Q 438 841 421 834 Q 414 831 418 817 Q 421 804 440 788 Z'], 'radStrokes': [1, 2, 3, 4]}",
-        // Medians not list of list of offsets
-        "{'strokes': ['M 440 788 Q 497 731 535 718 Q 553 717 562 732 Q 569 748 564 767 Q 546 815 477 828 Q 438 841 421 834 Q 414 831 418 817 Q 421 804 440 788 Z'], 'medians': [[[428]]], 'radStrokes': [1, 2, 3, 4]}",
-      ];
-
-      for (final invalidJSON in invalidJSONs) {
-        expect(
-          () => controllers[0].setStrokeOrder(invalidJSON),
-          throwsFormatException,
-        );
-      }
-    });
-
-    test('Unequal number of strokes and medians throws exception', () {
-      expect(
-        () => controllers[0].setStrokeOrder(
-          "{'strokes': ['M 440 788 Q 497 731 535 718 Q 553 717 562 732 Q 569 748 564 767 Q 546 815 477 828 Q 438 841 421 834 Q 414 831 418 817 Q 421 804 440 788 Z'], 'medians': [[[428, 824]], [[1, 2]]], 'radStrokes': [1, 2, 3, 4]}",
-        ),
-        throwsFormatException,
-      );
-    });
-
-    test('Invalid radical stroke indices leads to empty list', () {
-      controllers[0].setStrokeOrder(
-        "{'strokes': ['M 440 788 Q 497 731 535 718 Q 553 717 562 732 Q 569 748 564 767 Q 546 815 477 828 Q 438 841 421 834 Q 414 831 418 817 Q 421 804 440 788 Z'], 'medians': [[[428, 824], [1, 2]]], 'radStrokes': ['12', 3, 4]}",
-      );
-      expect(controllers[0].radicalStrokes, equals([]));
-    });
+    // Check that quizzing gets reset
+    controller.startQuiz();
+    expect(controller.isQuizzing, true);
+    controller.strokeOrder = StrokeOrder(strokeOrderJsons['永']!);
+    expect(controller.isQuizzing, false);
   });
 
   group('Test animation controls', () {
-    final controller =
-        StrokeOrderAnimationController(strokeOrders[0], tickerProvider);
+    final controller = StrokeOrderAnimationController(
+      StrokeOrder(strokeOrderJsons['永']!),
+      tickerProvider,
+    );
 
     test('Next stroke', () {
       controller.reset();
@@ -137,7 +51,7 @@ void main() {
 
     test('Show full character', () {
       controller.showFullCharacter();
-      expect(controller.currentStroke, controller.nStrokes);
+      expect(controller.currentStroke, controller.strokeOrder.nStrokes);
       expect(controller.currentStroke, 5);
     });
 
@@ -151,11 +65,15 @@ void main() {
   });
 
   group('Test quizzing', () {
-    final controller =
-        StrokeOrderAnimationController(strokeOrders[0], tickerProvider);
+    final controller = StrokeOrderAnimationController(
+      StrokeOrder(strokeOrderJsons['永']!),
+      tickerProvider,
+    );
 
-    final controller2 =
-        StrokeOrderAnimationController(strokeOrders[1], tickerProvider);
+    final controller2 = StrokeOrderAnimationController(
+      StrokeOrder(strokeOrderJsons['你']!),
+      tickerProvider,
+    );
 
     test('Start quiz', () {
       controller.startQuiz();
@@ -286,8 +204,10 @@ void main() {
     });
 
     group('Callbacks', () {
-      final controller =
-          StrokeOrderAnimationController(strokeOrders[5], tickerProvider);
+      final controller = StrokeOrderAnimationController(
+        StrokeOrder(strokeOrderJsonForQuizTests),
+        tickerProvider,
+      );
 
       late QuizSummary summary1;
       int nCalledOnQuizComplete1 = 0;

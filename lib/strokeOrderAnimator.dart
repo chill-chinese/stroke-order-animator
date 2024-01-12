@@ -53,12 +53,13 @@ class StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
       },
       child: Stack(
         children: <Widget>[
-          ...List.generate(widget._controller.strokes.length, (index) {
+          ...List.generate(widget._controller.strokeOrder.nStrokes, (index) {
             // Determine whether to use standard stroke color, radical color or hint color
             Color strokeColor = widget._controller.strokeColor;
 
             if (widget._controller.highlightRadical &&
-                widget._controller.radicalStrokes.contains(index)) {
+                widget._controller.strokeOrder.radicalStrokeIndices
+                    .contains(index)) {
               strokeColor = widget._controller.radicalColor;
             }
 
@@ -79,7 +80,7 @@ class StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
               height: 1024,
               child: CustomPaint(
                 painter: StrokePainter(
-                  widget._controller.strokes[index],
+                  widget._controller.strokeOrder.strokeOutlines[index],
                   showStroke: widget._controller.showStroke &&
                       index < widget._controller.currentStroke,
                   strokeColor: strokeColor,
@@ -89,7 +90,7 @@ class StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
                   medianColor: widget._controller.medianColor,
                   animate: animate,
                   animation: animationController,
-                  median: widget._controller.medians[index],
+                  median: widget._controller.strokeOrder.medians[index],
                 ),
               ),
             );

@@ -1,13 +1,11 @@
 // ignore_for_file: avoid_dynamic_calls, file_names, argument_type_not_assignable, return_of_invalid_type_from_closure
 
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:stroke_order_animator/strokeOrderAnimator.dart';
-import 'package:svg_path_parser/svg_path_parser.dart';
+import 'package:stroke_order_animator/stroke_order.dart';
 
-/// A ChangeNotifier that controls the behaviour of a stroke order diagram.
+/// A ChangeNotifier that controls the behavior of a stroke order diagram.
 /// It must be passed as an argument to a [StrokeOrderAnimator] that handles
 /// the actual presentation of the diagram. It can be consumed by the
 /// [StrokeOrderAnimator] and an app to allow for synchronization of, e.g.,
@@ -63,9 +61,8 @@ class StrokeOrderAnimationController extends ChangeNotifier {
       }
     });
 
-    setStrokeOrder(_strokeOrder);
     _setCurrentStroke(0);
-    _summary = QuizSummary(_nStrokes);
+    _summary = QuizSummary(strokeOrder.nStrokes);
 
     addOnQuizCompleteCallback(onQuizCompleteCallback);
     addOnWrongStrokeCallback(onWrongStrokeCallback);
@@ -73,19 +70,16 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 
     notifyListeners();
   }
-  String _strokeOrder;
-  String get strokeOrder => _strokeOrder;
-  List<int> _radicalStrokeIndices = List.empty();
-  List<int> get radicalStrokes => _radicalStrokeIndices;
+  StrokeOrder _strokeOrder;
+  StrokeOrder get strokeOrder => _strokeOrder;
+  set strokeOrder(StrokeOrder value) {
+    _strokeOrder = value;
+    stopQuiz();
+    reset();
+  }
 
-  int _nStrokes = 0;
-  int get nStrokes => _nStrokes;
   int _currentStroke = 0;
   int get currentStroke => _currentStroke;
-  List<Path> _strokes = List.empty();
-  List<Path> get strokes => _strokes;
-  List<List<Offset>> _medians = List.empty();
-  List<List<Offset>> get medians => _medians;
 
   final AnimationController _strokeAnimationController;
   AnimationController get strokeAnimationController =>
@@ -150,7 +144,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 
   void startAnimation() {
     if (!_isAnimating && !_isQuizzing) {
-      if (currentStroke == _nStrokes) {
+      if (currentStroke == strokeOrder.nStrokes) {
         _setCurrentStroke(0);
       }
       _isAnimating = true;
@@ -190,19 +184,19 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 
   void nextStroke() {
     if (!_isQuizzing) {
-      if (currentStroke == _nStrokes) {
+      if (currentStroke == strokeOrder.nStrokes) {
         _setCurrentStroke(1);
       } else if (_isAnimating) {
         _setCurrentStroke(currentStroke + 1);
         _strokeAnimationController.reset();
 
-        if (currentStroke < _nStrokes) {
+        if (currentStroke < strokeOrder.nStrokes) {
           _strokeAnimationController.forward();
         } else {
           _isAnimating = false;
         }
       } else {
-        if (currentStroke < _nStrokes) {
+        if (currentStroke < strokeOrder.nStrokes) {
           _setCurrentStroke(currentStroke + 1);
         }
       }
@@ -236,7 +230,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 
   void showFullCharacter() {
     if (!_isQuizzing) {
-      _setCurrentStroke(_nStrokes);
+      _setCurrentStroke(strokeOrder.nStrokes);
       _isAnimating = false;
       _strokeAnimationController.reset();
       notifyListeners();
@@ -247,7 +241,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     if (status == AnimationStatus.completed) {
       _setCurrentStroke(currentStroke + 1);
       _strokeAnimationController.reset();
-      if (currentStroke < _nStrokes) {
+      if (currentStroke < strokeOrder.nStrokes) {
         _strokeAnimationController.forward();
       } else {
         _isAnimating = false;
@@ -361,76 +355,19 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     }
   }
 
-  void setStrokeOrder(String strokeOrder) {
-    dynamic parsedJson;
-    List<Path> tmpStrokes;
-    List<List<Offset>> tmpMedians;
-    List<int> tmpRadicalStrokeIndices = [];
-
-    try {
-      parsedJson = json.decode(strokeOrder.replaceAll("'", '"'));
-    } catch (e) {
-      throw const FormatException('Invalid JSON string for stroke order.');
-    }
-
-    try {
-      tmpStrokes = List.generate(
-        parsedJson['strokes'].length,
-        (index) => parseSvgPath(parsedJson['strokes'][index]).transform(
-          // Transformation according to the makemeahanzi documentation
-          Matrix4(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, 1, 0, 0, 900, 0, 1).storage,
-        ),
-      );
-    } catch (e) {
-      throw const FormatException('Invalid strokes in stroke order JSON.');
-    }
-
-    try {
-      tmpMedians = List.generate(parsedJson['medians'].length, (iStroke) {
-        return List.generate(parsedJson['medians'][iStroke].length, (iPoint) {
-          return Offset(
-            parsedJson['medians'][iStroke][iPoint][0].toDouble(),
-            (parsedJson['medians'][iStroke][iPoint][1] * -1 + 900).toDouble(),
-          );
-        });
-      });
-    } catch (e) {
-      throw const FormatException('Invalid medians in stroke order JSON.');
-    }
-
-    if (tmpMedians.length != tmpStrokes.length) {
-      throw const FormatException('Number of strokes and medians not equal.');
-    }
-
-    try {
-      tmpRadicalStrokeIndices = List<int>.generate(
-        parsedJson['radStrokes'].length,
-        (index) => parsedJson['radStrokes'][index],
-      );
-    } catch (e) {
-      tmpRadicalStrokeIndices = [];
-    }
-
-    if (tmpStrokes.isNotEmpty) {
-      _strokeOrder = strokeOrder;
-      _strokes = tmpStrokes;
-      _medians = tmpMedians;
-      _radicalStrokeIndices = tmpRadicalStrokeIndices;
-      _nStrokes = _strokes.length;
-    }
-  }
-
   void checkStroke(List<Offset?> rawStroke) {
     final List<Offset> stroke = getNonNullPointsFrom(rawStroke);
     final strokeLength = getLength(stroke);
 
-    if (isQuizzing && currentStroke < nStrokes && strokeLength > 0) {
+    if (isQuizzing &&
+        currentStroke < strokeOrder.nStrokes &&
+        strokeLength > 0) {
       if (strokeIsCorrect(strokeLength, stroke)) {
         notifyCorrectStrokeCallbacks();
         _summary.correctStrokePaths[currentStroke] = stroke;
         _setCurrentStroke(currentStroke + 1);
 
-        if (currentStroke == nStrokes) {
+        if (currentStroke == strokeOrder.nStrokes) {
           stopQuiz();
           notifyQuizCompleteCallbacks();
         }
@@ -448,7 +385,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   }
 
   bool strokeIsCorrect(double strokeLength, List<Offset> stroke) {
-    final median = _medians[currentStroke];
+    final median = strokeOrder.medians[currentStroke];
     final medianLength = getLength(median);
 
     final List<double> allowedLengthRange = getAllowedLengthRange(medianLength);
@@ -597,8 +534,8 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 
     // Normalize the animation speed to the length of the stroke
     // The first stroke of 你 (length 520) is taken as reference
-    if (currentStroke < nStrokes) {
-      final currentMedian = _medians[currentStroke];
+    if (currentStroke < strokeOrder.nStrokes) {
+      final currentMedian = strokeOrder.medians[currentStroke];
 
       final medianPath = Path();
       if (currentMedian.length > 1) {
