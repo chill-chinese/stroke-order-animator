@@ -175,106 +175,92 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     );
   }
 
-  Flexible _buildAnimationControls(StrokeOrderAnimationController controller) {
-    return Flexible(
-      child: GridView(
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          childAspectRatio: 3,
-          crossAxisCount: 2,
-          mainAxisSpacing: 10,
+  Widget _buildAnimationControls(StrokeOrderAnimationController controller) {
+    return ChangeNotifierProvider.value(
+      value: controller,
+      builder: (context, child) => Consumer<StrokeOrderAnimationController>(
+        builder: (context, controller, child) => Flexible(
+          child: GridView(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              childAspectRatio: 3,
+              crossAxisCount: 2,
+              mainAxisSpacing: 10,
+            ),
+            primary: false,
+            children: <Widget>[
+              MaterialButton(
+                onPressed: controller.isQuizzing
+                    ? null
+                    : (controller.isAnimating
+                        ? controller.stopAnimation
+                        : controller.startAnimation),
+                child: controller.isAnimating
+                    ? Text('Stop animation')
+                    : Text('Start animation'),
+              ),
+              MaterialButton(
+                onPressed: controller.isQuizzing
+                    ? controller.stopQuiz
+                    : controller.startQuiz,
+                child: controller.isQuizzing
+                    ? Text('Stop quiz')
+                    : Text('Start quiz'),
+              ),
+              MaterialButton(
+                onPressed: controller.isQuizzing ? null : controller.nextStroke,
+                child: Text('Next stroke'),
+              ),
+              MaterialButton(
+                onPressed:
+                    controller.isQuizzing ? null : controller.previousStroke,
+                child: Text('Previous stroke'),
+              ),
+              MaterialButton(
+                onPressed:
+                    controller.isQuizzing ? null : controller.showFullCharacter,
+                child: Text('Show full character'),
+              ),
+              MaterialButton(
+                onPressed: controller.reset,
+                child: Text('Reset'),
+              ),
+              MaterialButton(
+                onPressed: () {
+                  controller.setShowOutline(!controller.showOutline);
+                },
+                child: controller.showOutline
+                    ? Text('Hide outline')
+                    : Text('Show Outline'),
+              ),
+              MaterialButton(
+                onPressed: () {
+                  controller.setShowMedian(!controller.showMedian);
+                },
+                child: controller.showMedian
+                    ? Text('Hide medians')
+                    : Text('Show medians'),
+              ),
+              MaterialButton(
+                onPressed: () {
+                  controller.setHighlightRadical(!controller.highlightRadical);
+                },
+                child: controller.highlightRadical
+                    ? Text('Unhighlight radical')
+                    : Text('Highlight radical'),
+              ),
+              MaterialButton(
+                onPressed: () {
+                  controller.setShowUserStroke(!controller.showUserStroke);
+                },
+                child: controller.showUserStroke
+                    ? Text('Hide user strokes')
+                    : Text('Show user strokes'),
+              ),
+            ],
+          ),
         ),
-        primary: false,
-        children: <Widget>[
-          MaterialButton(
-            onPressed: controller.isQuizzing
-                ? null
-                : () {
-                    if (controller.isAnimating) {
-                      controller.stopAnimation();
-                    } else {
-                      controller.startAnimation();
-                    }
-                    setState(() {});
-                  },
-            child: controller.isAnimating
-                ? Text('Stop animation')
-                : Text('Start animation'),
-          ),
-          MaterialButton(
-            onPressed: () {
-              controller.isQuizzing
-                  ? controller.stopQuiz()
-                  : controller.startQuiz();
-
-              setState(() {});
-            },
-            child:
-                controller.isQuizzing ? Text('Stop quiz') : Text('Start quiz'),
-          ),
-          MaterialButton(
-            onPressed: controller.isQuizzing
-                ? null
-                : _setStateAfter(controller.nextStroke),
-            child: Text('Next stroke'),
-          ),
-          MaterialButton(
-            onPressed: controller.isQuizzing
-                ? null
-                : _setStateAfter(controller.previousStroke),
-            child: Text('Previous stroke'),
-          ),
-          MaterialButton(
-            onPressed: controller.isQuizzing
-                ? null
-                : _setStateAfter(controller.showFullCharacter),
-            child: Text('Show full character'),
-          ),
-          MaterialButton(
-            onPressed: _setStateAfter(controller.reset),
-            child: Text('Reset'),
-          ),
-          MaterialButton(
-            onPressed: _setStateAfter(() {
-              controller.setShowOutline(!controller.showOutline);
-            }),
-            child: controller.showOutline
-                ? Text('Hide outline')
-                : Text('Show Outline'),
-          ),
-          MaterialButton(
-            onPressed: _setStateAfter(() {
-              controller.setShowMedian(!controller.showMedian);
-            }),
-            child: controller.showMedian
-                ? Text('Hide medians')
-                : Text('Show medians'),
-          ),
-          MaterialButton(
-            onPressed: _setStateAfter(() {
-              controller.setHighlightRadical(!controller.highlightRadical);
-            }),
-            child: controller.highlightRadical
-                ? Text('Unhighlight radical')
-                : Text('Highlight radical'),
-          ),
-          MaterialButton(
-            onPressed: _setStateAfter(() {
-              controller.setShowUserStroke(!controller.showUserStroke);
-            }),
-            child: controller.showUserStroke
-                ? Text('Hide user strokes')
-                : Text('Show user strokes'),
-          ),
-        ],
       ),
     );
-  }
-
-  void Function() _setStateAfter(void Function() f) {
-    return () {
-      f();
-      setState(() {});
-    };
   }
 }
 
