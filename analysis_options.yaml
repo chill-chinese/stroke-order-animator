@@ -1,0 +1,20 @@
+# This file configures the analyzer to use the lint rule set from `package:lint`
+
+include: package:lint/package.yaml
+
+# You might want to exclude auto-generated files from dart analysis
+analyzer:
+  exclude:
+    - "**.mocks.dart"
+    #- '**.freezed.dart'
+    #- '**.g.dart'
+
+# You can customize the lint rules set to your own liking. A list of all rules
+# can be found at https://dart-lang.github.io/linter/lints/options/options.html
+linter:
+  rules:
+    # Make constructors the first thing in every class
+    sort_constructors_first: true
+
+    prefer_single_quotes: true
+    require_trailing_commas: true

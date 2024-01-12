@@ -7,17 +7,17 @@ import 'package:provider/provider.dart';
 import 'package:stroke_order_animator/strokeOrderAnimationController.dart';
 import 'package:stroke_order_animator/strokeOrderAnimator.dart';
 
-import 'testStrokes.dart';
+import 'test_strokes.dart';
 
 void main() {
-  final tickerProvider = TestVSync();
+  const tickerProvider = TestVSync();
   debugSemanticsDisableAnimations = true;
 
-  test("Test 2D distance", () {
-    final point1 = Offset(0.0, 0.0);
-    final point2 = Offset(1.0, 1.0);
-    final point3 = Offset(-1.0, -1.0);
-    final point4 = Offset(-1.0, 1.0);
+  test('Test 2D distance', () {
+    const point1 = Offset.zero;
+    const point2 = Offset(1.0, 1.0);
+    const point3 = Offset(-1.0, -1.0);
+    const point4 = Offset(-1.0, 1.0);
 
     expect(distance2D(point1, point1), 0);
     expect(distance2D(point1, point2), sqrt(2));
