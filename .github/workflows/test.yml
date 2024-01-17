@@ -22,7 +22,7 @@ jobs:
     steps:
 
     - uses: actions/checkout@v3
-    
+
     - name: Install Flutter
       uses: subosito/flutter-action@v2
       with:
@@ -40,7 +40,7 @@ jobs:
     - run: dart format --set-exit-if-changed .
     - run: dart run build_runner build # Generate mocks
     - run: flutter analyze .
-    - run: flutter test
+    - run: flutter test --test-randomize-ordering-seed=random
 
     - name: Save Dart cache
       uses: actions/cache/save@v3
