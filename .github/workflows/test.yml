@@ -40,7 +40,13 @@ jobs:
     - run: dart format --set-exit-if-changed .
     - run: dart run build_runner build --delete-conflicting-outputs # Generate mocks
     - run: flutter analyze .
-    - run: flutter test --test-randomize-ordering-seed=random
+    - run: flutter test --test-randomize-ordering-seed=random --coverage
+
+    - name: Upload coverage reports to Codecov
+      uses: codecov/codecov-action@v4.0.1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        slug: chill-chinese/stroke-order-animator
 
     - name: Save Dart cache
       uses: actions/cache/save@v3
