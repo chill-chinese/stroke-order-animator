@@ -70,6 +70,8 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     Color radicalColor = Colors.red,
     Color brushColor = Colors.black,
     double brushWidth = 8.0,
+    double outlineWidth = 2.0,
+    double medianWidth = 2.0,
     int hintAfterStrokes = 3,
     Color hintColor = Colors.lightBlueAccent,
     void Function(QuizSummary)? onQuizCompleteCallback,
@@ -86,6 +88,8 @@ class StrokeOrderAnimationController extends ChangeNotifier {
         _radicalColor = radicalColor,
         _brushColor = brushColor,
         _brushWidth = brushWidth,
+        _outlineWidth = outlineWidth,
+        _medianWidth = medianWidth,
         _hintAfterStrokes = hintAfterStrokes,
         _hintColor = hintColor,
         _strokeAnimationSpeed = strokeAnimationSpeed,
@@ -177,6 +181,12 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 
   double _brushWidth;
   double get brushWidth => _brushWidth;
+
+  final double _outlineWidth;
+  double get outlineWidth => _outlineWidth;
+
+  final double _medianWidth;
+  double get medianWidth => _medianWidth;
 
   int _hintAfterStrokes;
   int get hintAfterStrokes => _hintAfterStrokes;

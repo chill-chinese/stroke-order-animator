@@ -89,8 +89,10 @@ class StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
                   strokeColor: strokeColor,
                   showOutline: widget._controller.showOutline,
                   outlineColor: widget._controller.outlineColor,
+                  outlineWidth: widget._controller.outlineWidth,
                   showMedian: widget._controller.showMedian,
                   medianColor: widget._controller.medianColor,
+                  medianWidth: widget._controller.medianWidth,
                   animate: animate,
                   animation: animationController,
                   median: widget._controller.strokeOrder.medians[index],
@@ -149,8 +151,10 @@ class StrokePainter extends CustomPainter {
     this.strokeColor = Colors.grey,
     this.showOutline = false,
     this.outlineColor = Colors.black,
+    this.outlineWidth = 2.0,
     this.showMedian = false,
     this.medianColor = Colors.black,
+    this.medianWidth = 2.0,
     this.animate = false,
     this.animation,
     this.median = const [],
@@ -161,7 +165,9 @@ class StrokePainter extends CustomPainter {
   final Path strokeOutlinePath;
   final Color strokeColor;
   final Color outlineColor;
+  final double outlineWidth;
   final Color medianColor;
+  final double medianWidth;
   final bool showOutline;
   final bool showStroke;
   final bool showMedian;
@@ -220,7 +226,7 @@ class StrokePainter extends CustomPainter {
     if (showOutline) {
       final borderPaint = Paint()
         ..color = outlineColor
-        ..strokeWidth = 2.0
+        ..strokeWidth = outlineWidth
         ..style = PaintingStyle.stroke;
       canvas.drawPath(strokeOutlinePath, borderPaint);
     }
@@ -235,7 +241,7 @@ class StrokePainter extends CustomPainter {
         medianPath,
         Paint()
           ..style = PaintingStyle.stroke
-          ..strokeWidth = 2.0
+          ..strokeWidth = medianWidth
           ..color = medianColor,
       );
     }
