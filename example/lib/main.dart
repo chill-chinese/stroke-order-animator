@@ -160,17 +160,16 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildStrokeOrderAnimation(StrokeOrderAnimationController controller) {
-    return SizedBox.square(
-      dimension: 350,
-      child: ChangeNotifierProvider<StrokeOrderAnimationController>.value(
-        value: controller,
-        child: Consumer<StrokeOrderAnimationController>(
-          builder: (context, controller, child) {
-            return FittedBox(
-              child: StrokeOrderAnimator(controller, key: UniqueKey()),
-            );
-          },
-        ),
+    return ChangeNotifierProvider<StrokeOrderAnimationController>.value(
+      value: controller,
+      child: Consumer<StrokeOrderAnimationController>(
+        builder: (context, controller, child) {
+          return StrokeOrderAnimator(
+            controller,
+            size: Size(300, 300),
+            key: UniqueKey(),
+          );
+        },
       ),
     );
   }

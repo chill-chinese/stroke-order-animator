@@ -13,15 +13,19 @@ import 'package:stroke_order_animator/stroke_order_animator.dart';
 /// the animation when the selected page changes in order to avoid broken
 /// animation behavior.
 class StrokeOrderAnimator extends StatefulWidget {
-  const StrokeOrderAnimator(this._controller, {super.key});
+  const StrokeOrderAnimator(
+    this._controller, {
+    this.size = const Size(1024, 1024),
+    super.key,
+  });
   final StrokeOrderAnimationController _controller;
-
+  final Size size;
   @override
   StrokeOrderAnimatorState createState() => StrokeOrderAnimatorState();
 }
 
 class StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
-  List<Offset?> _points = <Offset>[];
+  final List<Offset?> _points = <Offset>[];
 
   @override
   void initState() {
@@ -40,16 +44,27 @@ class StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
               point.dx <= box.size.width &&
               point.dy >= 0 &&
               point.dy <= box.size.height) {
-            _points = List.from(_points)..add(point);
+            _points.add(point);
           } else {
             if (_points.last != null) {
-              _points = List.from(_points)..add(null);
+              _points.add(null);
             }
           }
         });
       },
       onPanEnd: (DragEndDetails details) {
-        widget._controller.checkStroke(_points);
+        widget._controller.checkStroke(
+          _points
+              .map(
+                (point) => point != null
+                    ? Offset(
+                        point.dx * 1024 / widget.size.width,
+                        point.dy * 1024 / widget.size.height,
+                      )
+                    : null,
+              )
+              .toList(),
+        );
         setState(() {
           _points.clear();
         });
@@ -79,8 +94,8 @@ class StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
                 : widget._controller.strokeAnimationController;
 
             return SizedBox(
-              width: 1024,
-              height: 1024,
+              width: widget.size.width,
+              height: widget.size.height,
               child: CustomPaint(
                 painter: StrokePainter(
                   widget._controller.strokeOrder.strokeOutlines[index],
@@ -217,10 +232,16 @@ class StrokePainter extends CustomPainter {
           Offset.zero,
         );
 
-        canvas.drawPath(finalOutlinePath, strokePaint);
+        canvas.drawPath(
+          _scalePath(finalOutlinePath, size),
+          strokePaint,
+        );
       }
     } else if (showStroke) {
-      canvas.drawPath(strokeOutlinePath, strokePaint);
+      canvas.drawPath(
+        _scalePath(strokeOutlinePath, size),
+        strokePaint,
+      );
     }
 
     if (showOutline) {
@@ -228,7 +249,10 @@ class StrokePainter extends CustomPainter {
         ..color = outlineColor
         ..strokeWidth = outlineWidth
         ..style = PaintingStyle.stroke;
-      canvas.drawPath(strokeOutlinePath, borderPaint);
+      canvas.drawPath(
+        _scalePath(strokeOutlinePath, size),
+        borderPaint,
+      );
     }
 
     if (showMedian) {
@@ -238,7 +262,7 @@ class StrokePainter extends CustomPainter {
         medianPath.lineTo(point.dx, point.dy);
       }
       canvas.drawPath(
-        medianPath,
+        _scalePath(medianPath, size),
         Paint()
           ..style = PaintingStyle.stroke
           ..strokeWidth = medianWidth
@@ -249,6 +273,33 @@ class StrokePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(CustomPainter oldDelegate) => true;
+
+  Path _scalePath(Path path, Size size) {
+    if (size == const Size(1024, 1024)) {
+      return path;
+    }
+
+    return path.transform(
+      Matrix4(
+        size.width / 1024,
+        0,
+        0,
+        0,
+        0,
+        size.height / 1024,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+      ).storage,
+    );
+  }
 }
 
 List<Path> extractContourPaths(
