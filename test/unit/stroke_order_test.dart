@@ -65,4 +65,16 @@ void main() {
       });
     });
   });
+
+  test('Stroke order equality and hashing', () {
+    expect(
+      StrokeOrder(strokeOrderJsons['永']!).hashCode,
+      StrokeOrder(strokeOrderJsons['永']!).hashCode,
+    );
+
+    expect(
+      StrokeOrder(strokeOrderJsons['永']!),
+      StrokeOrder(strokeOrderJsons['永']!),
+    );
+  });
 }

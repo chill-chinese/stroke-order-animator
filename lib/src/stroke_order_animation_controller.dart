@@ -428,8 +428,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     _onCorrectStrokeCallbacks.add(callback);
   }
 
-  void checkStroke(List<Offset?> rawStroke) {
-    final List<Offset> stroke = getNonNullPointsFrom(rawStroke);
+  void checkStroke(List<Offset> stroke) {
     final strokeLength = getLength(stroke);
 
     if (isQuizzing &&
@@ -437,7 +436,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
         strokeLength > 0) {
       if (strokeIsCorrect(strokeLength, stroke)) {
         notifyCorrectStrokeCallbacks();
-        _summary.correctStrokePaths[currentStroke] = stroke;
+        _summary.correctStrokePaths[currentStroke] = List.from(stroke);
         _setCurrentStroke(currentStroke + 1);
 
         if (currentStroke == strokeOrder.nStrokes) {
@@ -588,18 +587,6 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     }
 
     return path;
-  }
-
-  List<Offset> getNonNullPointsFrom(List<Offset?> rawPoints) {
-    final List<Offset> points = [];
-
-    for (final point in rawPoints) {
-      if (point != null) {
-        points.add(point);
-      }
-    }
-
-    return points;
   }
 
   void _setCurrentStroke(int value) {
