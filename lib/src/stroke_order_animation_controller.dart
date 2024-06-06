@@ -43,11 +43,13 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   /// * Animation speed of stroke animations and hints in quiz mode (try 3 and adjust from there)
   /// * Whether to show/hide strokes
   /// * Whether to show/hide outlines
+  /// * Whether to show/hide backgrounds for the strokes
   /// * Whether to show/hide medians
   /// * Whether to show/hide the correct strokes the user writes during a quiz
   /// * Whether to highlight radicals
   /// * Stroke color
   /// * Outline color
+  /// * Background color (of the strokes, not the whole widget)
   /// * Median color
   /// * Radical color
   /// * Brush color in quiz mode
@@ -61,11 +63,13 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     double hintAnimationSpeed = 3,
     bool showStroke = true,
     bool showOutline = true,
+    bool showBackground = false,
     bool showMedian = false,
     bool showUserStroke = false,
     bool highlightRadical = false,
     Color strokeColor = Colors.blue,
     Color outlineColor = Colors.black,
+    Color backgroundColor = Colors.grey,
     Color medianColor = Colors.black,
     Color radicalColor = Colors.red,
     Color brushColor = Colors.black,
@@ -80,10 +84,12 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   })  : _strokeColor = strokeColor,
         _showStroke = showStroke,
         _showOutline = showOutline,
+        _showBackground = showBackground,
         _showMedian = showMedian,
         _showUserStroke = showUserStroke,
         _highlightRadical = highlightRadical,
         _outlineColor = outlineColor,
+        _backgroundColor = backgroundColor,
         _medianColor = medianColor,
         _radicalColor = radicalColor,
         _brushColor = brushColor,
@@ -155,18 +161,21 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 
   bool _showStroke;
   bool _showOutline;
+  bool _showBackground;
   bool _showMedian;
   bool _showUserStroke;
   bool _highlightRadical;
 
   bool get showStroke => _showStroke;
   bool get showOutline => _showOutline;
+  bool get showBackground => _showBackground;
   bool get showMedian => _showMedian;
   bool get showUserStroke => _showUserStroke;
   bool get highlightRadical => _highlightRadical;
 
   Color _strokeColor;
   Color _outlineColor;
+  Color _backgroundColor;
   Color _medianColor;
   Color _radicalColor;
   Color _brushColor;
@@ -174,6 +183,7 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 
   Color get strokeColor => _strokeColor;
   Color get outlineColor => _outlineColor;
+  Color get backgroundColor => _backgroundColor;
   Color get medianColor => _medianColor;
   Color get radicalColor => _radicalColor;
   Color get brushColor => _brushColor;
@@ -324,6 +334,11 @@ class StrokeOrderAnimationController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void setShowBackground(bool value) {
+    _showBackground = value;
+    notifyListeners();
+  }
+
   void setShowMedian(bool value) {
     _showMedian = value;
     notifyListeners();
@@ -341,6 +356,11 @@ class StrokeOrderAnimationController extends ChangeNotifier {
 
   void setOutlineColor(Color value) {
     _outlineColor = value;
+    notifyListeners();
+  }
+
+  void setBackgroundColor(Color value) {
+    _backgroundColor = value;
     notifyListeners();
   }
 
