@@ -105,6 +105,8 @@ class StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
                   showOutline: widget._controller.showOutline,
                   outlineColor: widget._controller.outlineColor,
                   outlineWidth: widget._controller.outlineWidth,
+                  showBackground: widget._controller.showBackground,
+                  backgroundColor: widget._controller.backgroundColor,
                   showMedian: widget._controller.showMedian,
                   medianColor: widget._controller.medianColor,
                   medianWidth: widget._controller.medianWidth,
@@ -162,17 +164,19 @@ class StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
 class StrokePainter extends CustomPainter {
   StrokePainter(
     this.strokeOutlinePath, {
-    this.showStroke = true,
-    this.strokeColor = Colors.grey,
-    this.showOutline = false,
-    this.outlineColor = Colors.black,
-    this.outlineWidth = 2.0,
-    this.showMedian = false,
-    this.medianColor = Colors.black,
-    this.medianWidth = 2.0,
-    this.animate = false,
-    this.animation,
-    this.median = const [],
+    required this.showStroke,
+    required this.strokeColor,
+    required this.showBackground,
+    required this.backgroundColor,
+    required this.showOutline,
+    required this.outlineColor,
+    required this.outlineWidth,
+    required this.showMedian,
+    required this.medianColor,
+    required this.medianWidth,
+    required this.animate,
+    required this.animation,
+    required this.median,
   }) : super(repaint: animation);
   // If the stroke should be animated, an animation and the median have to be provided
   final bool animate;
@@ -181,6 +185,8 @@ class StrokePainter extends CustomPainter {
   final Color strokeColor;
   final Color outlineColor;
   final double outlineWidth;
+  final bool showBackground;
+  final Color backgroundColor;
   final Color medianColor;
   final double medianWidth;
   final bool showOutline;
@@ -195,6 +201,17 @@ class StrokePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    if (showBackground) {
+      final backgroundPaint = Paint()
+        ..color = backgroundColor
+        ..style = PaintingStyle.fill;
+
+      canvas.drawPath(
+        _scalePath(strokeOutlinePath, size),
+        backgroundPaint,
+      );
+    }
+
     if (strokeStart < 0) {
       // Calculate the points on strokeOutlinePath that are closest to the start and end points of the median
       strokeStart = getClosestPointOnPathAsDistanceOnPath(
