@@ -62,37 +62,24 @@ void main() {
         ),
       );
 
-      // Initially empty
-      Finder brushFinder = find.byType(CustomPaint);
-      // There is one brush for every stroke and one more for the active stroke during drawing
-      expect(brushFinder, findsNWidgets(controller.strokeOrder.nStrokes + 1));
+      final customPaintFinder = find.byType(CustomPaint);
+      // Only the character itself is painted
+      expect(customPaintFinder, findsNWidgets(1));
 
       // One correct stroke
       controller.checkStroke(correctStroke00);
       await tester.pump();
-      brushFinder = find.byType(CustomPaint);
-      expect(
-        brushFinder,
-        findsNWidgets(controller.strokeOrder.nStrokes + 1 + 1),
-      );
+      expect(customPaintFinder, findsNWidgets(1 + 1));
 
       // One incorrect stroke
       controller.checkStroke(wrongStroke00);
       await tester.pump();
-      brushFinder = find.byType(CustomPaint);
-      expect(
-        brushFinder,
-        findsNWidgets(controller.strokeOrder.nStrokes + 1 + 1),
-      );
+      expect(customPaintFinder, findsNWidgets(1 + 1));
 
       // One more correct stroke
       controller.checkStroke(correctStroke01);
       await tester.pump();
-      brushFinder = find.byType(CustomPaint);
-      expect(
-        brushFinder,
-        findsNWidgets(controller.strokeOrder.nStrokes + 1 + 2),
-      );
+      expect(customPaintFinder, findsNWidgets(1 + 2));
     });
 
     testWidgets('Strokes stay on screen after quiz finished',
@@ -125,8 +112,8 @@ void main() {
       );
 
       await tester.pump();
-      final brushFinder = find.byType(CustomPaint);
-      expect(brushFinder, findsNWidgets(controller.strokeOrder.nStrokes + 3));
+      final customPaintFinder = find.byType(CustomPaint);
+      expect(customPaintFinder, findsNWidgets(1 + 3));
     });
 
     testWidgets('Strokes stay on screen only if enabled',
@@ -156,16 +143,13 @@ void main() {
       );
 
       await tester.pump();
-      Finder brushFinder = find.byType(CustomPaint);
-      expect(brushFinder, findsNWidgets(controller.strokeOrder.nStrokes + 1));
+      final Finder customPaintFinder = find.byType(CustomPaint);
+      // Only the character itself is painted
+      expect(customPaintFinder, findsNWidgets(1));
 
       controller.setShowUserStroke(true);
       await tester.pump();
-      brushFinder = find.byType(CustomPaint);
-      expect(
-        brushFinder,
-        findsNWidgets(controller.strokeOrder.nStrokes + 1 + 1),
-      );
+      expect(customPaintFinder, findsNWidgets(1 + 1));
     });
   });
 }

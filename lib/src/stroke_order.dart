@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:stroke_order_animator/stroke_order_animator.dart';
 import 'package:svg_path_parser/svg_path_parser.dart';
@@ -9,7 +10,7 @@ import 'package:svg_path_parser/svg_path_parser.dart';
 /// A JSON string retrieved via [downloadStrokeOrder] can be passed directly to
 /// the constructor.
 class StrokeOrder {
-  StrokeOrder(String strokeOrderJson) {
+  StrokeOrder(String strokeOrderJson) : _rawJson = strokeOrderJson {
     final parsedJson = _parseJson(strokeOrderJson);
 
     strokeOutlines = _parseStrokeOutlines(parsedJson);
@@ -23,6 +24,8 @@ class StrokeOrder {
       );
     }
   }
+
+  final String _rawJson;
 
   /// Path information describing the outline of each strokes.
   late final List<Path> strokeOutlines;
@@ -101,5 +104,13 @@ class StrokeOrder {
         'Invalid radical stroke indices in stroke order JSON',
       );
     }
+  }
+
+  @override
+  int get hashCode => _rawJson.hashCode;
+
+  @override
+  bool operator ==(Object other) {
+    return other is StrokeOrder && other._rawJson == _rawJson;
   }
 }
