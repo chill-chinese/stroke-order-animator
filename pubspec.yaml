@@ -1,5 +1,5 @@
 name: stroke_order_animator
-description: "Stroke order animations and quizzes for Chinese characters."
+description: "Stroke order animations and practice quizzes for Chinese characters."
 
 # Version gets set by cider during publishing
 version: 0.0.0
