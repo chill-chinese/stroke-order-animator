@@ -7,7 +7,7 @@ import 'package:stroke_order_animator/stroke_order_animator.dart';
 ///
 /// It must be passed as an argument to a [StrokeOrderAnimator] that handles
 /// the actual presentation of the diagram.
-/// It can additionally be consumed by an app to allow for
+/// It can additionally be consumed by a [ListenableBuilder] to allow for
 /// synchronization of control buttons with the animations.
 /// In order to control animations, a [TickerProvider] must be passed to the
 /// controller, for example using a [TickerProviderStateMixin].
@@ -34,6 +34,8 @@ import 'package:stroke_order_animator/stroke_order_animator.dart';
 /// * Show next/previous stroke
 /// * Show full character
 /// * Reset animation/quiz
+///
+/// Don't forget to call [dispose] when the controller is no longer needed.
 class StrokeOrderAnimationController extends ChangeNotifier {
   /// Creates a new [StrokeOrderAnimationController].
   ///
@@ -56,6 +58,8 @@ class StrokeOrderAnimationController extends ChangeNotifier {
   /// * Brush thickness in quiz mode
   /// * Number of wrong strokes before showing a hint in quiz mode
   /// * Hint color in quiz mode
+  ///
+  /// Don't forget to call [dispose] when the controller is no longer needed.
   StrokeOrderAnimationController(
     this._strokeOrder,
     TickerProvider tickerProvider, {

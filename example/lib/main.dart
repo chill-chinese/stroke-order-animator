@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
-import 'package:provider/provider.dart';
 import 'package:stroke_order_animator/stroke_order_animator.dart';
 
 void main() {
@@ -29,6 +28,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   final _httpClient = http.Client();
   final _textController = TextEditingController();
 
+  StrokeOrderAnimationController? _completedController;
   late Future<StrokeOrderAnimationController> _animationController;
 
   @override
@@ -36,11 +36,13 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     super.initState();
 
     _animationController = _loadStrokeOrder('永');
+    _animationController.then((a) => _completedController = a);
   }
 
   @override
   void dispose() {
     _httpClient.close();
+    _completedController?.dispose();
     super.dispose();
   }
 
@@ -129,6 +131,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
     setState(() {
       _animationController = _loadStrokeOrder(_textController.text);
+      _animationController.then((a) => _completedController = a);
     });
   }
 
@@ -160,111 +163,94 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   }
 
   Widget _buildStrokeOrderAnimation(StrokeOrderAnimationController controller) {
-    return ChangeNotifierProvider<StrokeOrderAnimationController>.value(
-      value: controller,
-      child: Consumer<StrokeOrderAnimationController>(
-        builder: (context, controller, child) {
-          return StrokeOrderAnimator(
-            controller,
-            size: Size(300, 300),
-            key: UniqueKey(),
-          );
-        },
-      ),
+    return StrokeOrderAnimator(
+      controller,
+      size: Size(300, 300),
+      key: UniqueKey(),
     );
   }
 
   Widget _buildAnimationControls(StrokeOrderAnimationController controller) {
-    return ChangeNotifierProvider.value(
-      value: controller,
-      builder: (context, child) => Consumer<StrokeOrderAnimationController>(
-        builder: (context, controller, child) => Flexible(
-          child: GridView(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              childAspectRatio: 3,
-              crossAxisCount: 2,
-              mainAxisSpacing: 10,
-            ),
-            primary: false,
-            children: <Widget>[
-              MaterialButton(
-                onPressed: controller.isQuizzing
-                    ? null
-                    : (controller.isAnimating
-                        ? controller.stopAnimation
-                        : controller.startAnimation),
-                child: controller.isAnimating
-                    ? Text('Stop animation')
-                    : Text('Start animation'),
-              ),
-              MaterialButton(
-                onPressed: controller.isQuizzing
-                    ? controller.stopQuiz
-                    : controller.startQuiz,
-                child: controller.isQuizzing
-                    ? Text('Stop quiz')
-                    : Text('Start quiz'),
-              ),
-              MaterialButton(
-                onPressed: controller.isQuizzing ? null : controller.nextStroke,
-                child: Text('Next stroke'),
-              ),
-              MaterialButton(
-                onPressed:
-                    controller.isQuizzing ? null : controller.previousStroke,
-                child: Text('Previous stroke'),
-              ),
-              MaterialButton(
-                onPressed:
-                    controller.isQuizzing ? null : controller.showFullCharacter,
-                child: Text('Show full character'),
-              ),
-              MaterialButton(
-                onPressed: controller.reset,
-                child: Text('Reset'),
-              ),
-              MaterialButton(
-                onPressed: () {
-                  controller.setShowOutline(!controller.showOutline);
-                },
-                child: controller.showOutline
-                    ? Text('Hide outline')
-                    : Text('Show Outline'),
-              ),
-              MaterialButton(
-                onPressed: () {
-                  controller.setShowBackground(!controller.showBackground);
-                },
-                child: controller.showUserStroke
-                    ? Text('Hide background')
-                    : Text('Show background'),
-              ),
-              MaterialButton(
-                onPressed: () {
-                  controller.setShowMedian(!controller.showMedian);
-                },
-                child: controller.showMedian
-                    ? Text('Hide medians')
-                    : Text('Show medians'),
-              ),
-              MaterialButton(
-                onPressed: () {
-                  controller.setHighlightRadical(!controller.highlightRadical);
-                },
-                child: controller.highlightRadical
-                    ? Text('Unhighlight radical')
-                    : Text('Highlight radical'),
-              ),
-              MaterialButton(
-                onPressed: () {
-                  controller.setShowUserStroke(!controller.showUserStroke);
-                },
-                child: controller.showUserStroke
-                    ? Text('Hide user strokes')
-                    : Text('Show user strokes'),
-              ),
-            ],
+    return ListenableBuilder(
+      listenable: controller,
+      builder: (context, child) => Flexible(
+        child: GridView(
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            childAspectRatio: 3,
+            crossAxisCount: 2,
+            mainAxisSpacing: 10,
           ),
+          primary: false,
+          children: <Widget>[
+            MaterialButton(
+              onPressed: controller.isQuizzing
+                  ? null
+                  : (controller.isAnimating
+                      ? controller.stopAnimation
+                      : controller.startAnimation),
+              child: controller.isAnimating
+                  ? Text('Stop animation')
+                  : Text('Start animation'),
+            ),
+            MaterialButton(
+              onPressed: controller.isQuizzing
+                  ? controller.stopQuiz
+                  : controller.startQuiz,
+              child: controller.isQuizzing
+                  ? Text('Stop quiz')
+                  : Text('Start quiz'),
+            ),
+            MaterialButton(
+              onPressed: controller.isQuizzing ? null : controller.nextStroke,
+              child: Text('Next stroke'),
+            ),
+            MaterialButton(
+              onPressed:
+                  controller.isQuizzing ? null : controller.previousStroke,
+              child: Text('Previous stroke'),
+            ),
+            MaterialButton(
+              onPressed:
+                  controller.isQuizzing ? null : controller.showFullCharacter,
+              child: Text('Show full character'),
+            ),
+            MaterialButton(
+              onPressed: controller.reset,
+              child: Text('Reset'),
+            ),
+            MaterialButton(
+              onPressed: () {
+                controller.setShowOutline(!controller.showOutline);
+              },
+              child: controller.showOutline
+                  ? Text('Hide outline')
+                  : Text('Show Outline'),
+            ),
+            MaterialButton(
+              onPressed: () {
+                controller.setShowMedian(!controller.showMedian);
+              },
+              child: controller.showMedian
+                  ? Text('Hide medians')
+                  : Text('Show medians'),
+            ),
+            MaterialButton(
+              onPressed: () {
+                controller.setHighlightRadical(!controller.highlightRadical);
+              },
+              child: controller.highlightRadical
+                  ? Text('Unhighlight radical')
+                  : Text('Highlight radical'),
+            ),
+            MaterialButton(
+              onPressed: () {
+                controller.setShowUserStroke(!controller.showUserStroke);
+              },
+              child: controller.showUserStroke
+                  ? Text('Hide user strokes')
+                  : Text('Show user strokes'),
+            ),
+          ],
         ),
       ),
     );

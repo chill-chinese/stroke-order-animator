@@ -15,7 +15,6 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^1.1.2
-  provider: ^6.0.5
   svg_path_parser: ^1.0.0
 
 dev_dependencies:
