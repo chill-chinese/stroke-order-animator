@@ -224,7 +224,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               },
               child: controller.showOutline
                   ? Text('Hide outline')
-                  : Text('Show Outline'),
+                  : Text('Show outline'),
+            ),
+            MaterialButton(
+              onPressed: () {
+                controller.setShowBackground(!controller.showBackground);
+              },
+              child: controller.showBackground
+                  ? Text('Hide background')
+                  : Text('Show background'),
             ),
             MaterialButton(
               onPressed: () {
