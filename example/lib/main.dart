@@ -233,6 +233,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
               ),
               MaterialButton(
                 onPressed: () {
+                  controller.setShowBackground(!controller.showBackground);
+                },
+                child: controller.showUserStroke
+                    ? Text('Hide background')
+                    : Text('Show background'),
+              ),
+              MaterialButton(
+                onPressed: () {
                   controller.setShowMedian(!controller.showMedian);
                 },
                 child: controller.showMedian

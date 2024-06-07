@@ -45,7 +45,7 @@ class CharacterPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    _paintBackground(canvas, size);
+    _paintBackgroundAndOutline(canvas, size);
 
     for (var i = 0; i < controller.strokeOrder.strokeOutlines.length; i++) {
       if (i == controller.currentStroke &&
@@ -62,17 +62,18 @@ class CharacterPainter extends CustomPainter {
     }
   }
 
-  void _paintBackground(Canvas canvas, Size size) {
+  void _paintBackgroundAndOutline(Canvas canvas, Size size) {
     final outlines = controller.strokeOrder.strokeOutlines;
     for (var i = 0; i < outlines.length; i++) {
-      // Paint the background only for those strokes that are not getting
-      // painted with the actual stroke color later
-      if (controller.showBackground && !shouldPaintStroke[i]) {
-        canvas.drawPath(
-          _scalePath(outlines[i], size),
-          backgroundPaint,
-        );
-
+      // Paint the background and outline only for those strokes that are not
+      // getting painted with the actual stroke color later
+      if (!shouldPaintStroke[i]) {
+        if (controller.showBackground) {
+          canvas.drawPath(
+            _scalePath(outlines[i], size),
+            backgroundPaint,
+          );
+        }
         if (controller.showOutline) {
           canvas.drawPath(
             _scalePath(outlines[i], size),
