@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:provider/provider.dart';
 import 'package:stroke_order_animator/src/distance_2_d.dart';
 import 'package:stroke_order_animator/stroke_order_animator.dart';
 
@@ -49,16 +48,9 @@ void main() {
       controller.setShowUserStroke(true);
 
       await tester.pumpWidget(
-        ChangeNotifierProvider<StrokeOrderAnimationController>.value(
-          value: controller,
-          child: Consumer<StrokeOrderAnimationController>(
-            builder: (context, controller, child) {
-              return Directionality(
-                textDirection: TextDirection.ltr,
-                child: StrokeOrderAnimator(controller),
-              );
-            },
-          ),
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: StrokeOrderAnimator(controller),
         ),
       );
 
@@ -98,16 +90,9 @@ void main() {
       controller.checkStroke(correctStroke52);
 
       await tester.pumpWidget(
-        ChangeNotifierProvider<StrokeOrderAnimationController>.value(
-          value: controller,
-          child: Consumer<StrokeOrderAnimationController>(
-            builder: (context, controller, child) {
-              return Directionality(
-                textDirection: TextDirection.ltr,
-                child: StrokeOrderAnimator(controller),
-              );
-            },
-          ),
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: StrokeOrderAnimator(controller),
         ),
       );
 
@@ -129,16 +114,9 @@ void main() {
       controller.checkStroke(correctStroke50);
 
       await tester.pumpWidget(
-        ChangeNotifierProvider<StrokeOrderAnimationController>.value(
-          value: controller,
-          child: Consumer<StrokeOrderAnimationController>(
-            builder: (context, controller, child) {
-              return Directionality(
-                textDirection: TextDirection.ltr,
-                child: StrokeOrderAnimator(controller),
-              );
-            },
-          ),
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: StrokeOrderAnimator(controller),
         ),
       );
 

@@ -17,8 +17,10 @@ class StrokeOrderAnimator extends StatefulWidget {
     this.size = const Size(1024, 1024),
     super.key,
   });
+
   final StrokeOrderAnimationController _controller;
   final Size size;
+
   @override
   StrokeOrderAnimatorState createState() => StrokeOrderAnimatorState();
 }
@@ -28,60 +30,58 @@ class StrokeOrderAnimatorState extends State<StrokeOrderAnimator> {
   bool _userStrokeLeftCanvas = false;
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final controller = widget._controller;
 
-    return GestureDetector(
-      onPanUpdate: (DragUpdateDetails details) {
-        // User continues stroke
-        if (_userStrokeLeftCanvas) {
-          return;
-        }
-
-        final RenderBox box = context.findRenderObject()! as RenderBox;
-        final Offset point = box.globalToLocal(details.globalPosition);
-
-        setState(() {
-          if (_pointIsOnCanvas(point, box)) {
-            _currentUserStroke.add(
-              // Normalize point to 1024x1024 coordinate system
-              Offset(point.dx / box.size.width, point.dy / box.size.height) *
-                  1024,
-            );
-          } else {
-            _userStrokeLeftCanvas = true;
+    return ListenableBuilder(
+      listenable: controller,
+      builder: (context, child) => GestureDetector(
+        onPanUpdate: (DragUpdateDetails details) {
+          // User continues stroke
+          if (_userStrokeLeftCanvas) {
+            return;
           }
-        });
-      },
-      onPanEnd: (DragEndDetails details) {
-        // User finished stroke
-        controller.checkStroke(_currentUserStroke);
-        setState(() {
-          _currentUserStroke.clear();
-          _userStrokeLeftCanvas = false;
-        });
-      },
-      child: SizedBox(
-        width: widget.size.width,
-        height: widget.size.height,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            CustomPaint(painter: CharacterPainter(controller)),
-            if (controller.showUserStroke)
-              ..._paintCorrectUserStrokes(controller, widget.size),
-            if (controller.isQuizzing && _currentUserStroke.isNotEmpty)
-              _paintCurrentUserStroke(
-                _currentUserStroke,
-                controller,
-                widget.size,
-              ),
-          ],
+
+          final RenderBox box = context.findRenderObject()! as RenderBox;
+          final Offset point = box.globalToLocal(details.globalPosition);
+
+          setState(() {
+            if (_pointIsOnCanvas(point, box)) {
+              _currentUserStroke.add(
+                // Normalize point to 1024x1024 coordinate system
+                Offset(point.dx / box.size.width, point.dy / box.size.height) *
+                    1024,
+              );
+            } else {
+              _userStrokeLeftCanvas = true;
+            }
+          });
+        },
+        onPanEnd: (DragEndDetails details) {
+          // User finished stroke
+          controller.checkStroke(_currentUserStroke);
+          setState(() {
+            _currentUserStroke.clear();
+            _userStrokeLeftCanvas = false;
+          });
+        },
+        child: SizedBox(
+          width: widget.size.width,
+          height: widget.size.height,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              CustomPaint(painter: CharacterPainter(controller)),
+              if (controller.showUserStroke)
+                ..._paintCorrectUserStrokes(controller, widget.size),
+              if (controller.isQuizzing && _currentUserStroke.isNotEmpty)
+                _paintCurrentUserStroke(
+                  _currentUserStroke,
+                  controller,
+                  widget.size,
+                ),
+            ],
+          ),
         ),
       ),
     );
