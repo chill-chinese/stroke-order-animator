@@ -4,27 +4,31 @@ import 'package:http/http.dart' as http;
 import 'package:stroke_order_animator/stroke_order_animator.dart';
 
 void main() {
-  runApp(App());
+  runApp(const App());
 }
 
 class App extends StatelessWidget {
+  const App({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       theme: ThemeData(
         textTheme: Theme.of(context).textTheme.apply(fontSizeFactor: 1.2),
       ),
-      home: HomePage(),
+      home: const HomePage(),
     );
   }
 }
 
 class HomePage extends StatefulWidget {
+  const HomePage({super.key});
+
   @override
-  _HomePageState createState() => _HomePageState();
+  HomePageState createState() => HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
+class HomePageState extends State<HomePage> with TickerProviderStateMixin {
   final _httpClient = http.Client();
   final _textController = TextEditingController();
 
@@ -48,7 +52,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Future<StrokeOrderAnimationController> _loadStrokeOrder(
     String character,
-  ) async {
+  ) {
     return downloadStrokeOrder(character, _httpClient).then((value) {
       final controller = StrokeOrderAnimationController(
         StrokeOrder(value),
@@ -74,9 +78,9 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           width: 500,
           child: Column(
             children: [
-              SizedBox(height: 50),
+              const SizedBox(height: 50),
               _buildCharacterInputField(),
-              SizedBox(height: 50),
+              const SizedBox(height: 50),
               _buildStrokeOrderAnimationAndControls(),
             ],
           ),
@@ -93,14 +97,14 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           children: [
             TextField(
               controller: _textController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 constraints: BoxConstraints(maxWidth: 320),
                 border: OutlineInputBorder(),
                 hintText: 'Enter a character',
               ),
               onChanged: _onTextFieldChanged,
             ),
-            Tooltip(
+            const Tooltip(
               message: copyRightDisclaimer,
               child: Padding(
                 padding: EdgeInsets.only(left: 10),
@@ -141,7 +145,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       future: _animationController,
       builder: (context, snapshot) {
         if (snapshot.connectionState != ConnectionState.done) {
-          return CircularProgressIndicator();
+          return const CircularProgressIndicator();
         }
         if (snapshot.hasData) {
           return Expanded(
@@ -157,7 +161,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
           return Text(snapshot.error.toString());
         }
 
-        return SizedBox.shrink();
+        return const SizedBox.shrink();
       },
     );
   }
@@ -165,7 +169,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   Widget _buildStrokeOrderAnimation(StrokeOrderAnimationController controller) {
     return StrokeOrderAnimator(
       controller,
-      size: Size(300, 300),
+      size: const Size(300, 300),
       key: UniqueKey(),
     );
   }
@@ -175,7 +179,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       listenable: controller,
       builder: (context, child) => Flexible(
         child: GridView(
-          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             childAspectRatio: 3,
             crossAxisCount: 2,
             mainAxisSpacing: 10,
@@ -189,74 +193,74 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
                       ? controller.stopAnimation
                       : controller.startAnimation),
               child: controller.isAnimating
-                  ? Text('Stop animation')
-                  : Text('Start animation'),
+                  ? const Text('Stop animation')
+                  : const Text('Start animation'),
             ),
             MaterialButton(
               onPressed: controller.isQuizzing
                   ? controller.stopQuiz
                   : controller.startQuiz,
               child: controller.isQuizzing
-                  ? Text('Stop quiz')
-                  : Text('Start quiz'),
+                  ? const Text('Stop quiz')
+                  : const Text('Start quiz'),
             ),
             MaterialButton(
               onPressed: controller.isQuizzing ? null : controller.nextStroke,
-              child: Text('Next stroke'),
+              child: const Text('Next stroke'),
             ),
             MaterialButton(
               onPressed:
                   controller.isQuizzing ? null : controller.previousStroke,
-              child: Text('Previous stroke'),
+              child: const Text('Previous stroke'),
             ),
             MaterialButton(
               onPressed:
                   controller.isQuizzing ? null : controller.showFullCharacter,
-              child: Text('Show full character'),
+              child: const Text('Show full character'),
             ),
             MaterialButton(
               onPressed: controller.reset,
-              child: Text('Reset'),
+              child: const Text('Reset'),
             ),
             MaterialButton(
               onPressed: () {
                 controller.setShowOutline(!controller.showOutline);
               },
               child: controller.showOutline
-                  ? Text('Hide outline')
-                  : Text('Show outline'),
+                  ? const Text('Hide outline')
+                  : const Text('Show outline'),
             ),
             MaterialButton(
               onPressed: () {
                 controller.setShowBackground(!controller.showBackground);
               },
               child: controller.showBackground
-                  ? Text('Hide background')
-                  : Text('Show background'),
+                  ? const Text('Hide background')
+                  : const Text('Show background'),
             ),
             MaterialButton(
               onPressed: () {
                 controller.setShowMedian(!controller.showMedian);
               },
               child: controller.showMedian
-                  ? Text('Hide medians')
-                  : Text('Show medians'),
+                  ? const Text('Hide medians')
+                  : const Text('Show medians'),
             ),
             MaterialButton(
               onPressed: () {
                 controller.setHighlightRadical(!controller.highlightRadical);
               },
               child: controller.highlightRadical
-                  ? Text('Unhighlight radical')
-                  : Text('Highlight radical'),
+                  ? const Text('Unhighlight radical')
+                  : const Text('Highlight radical'),
             ),
             MaterialButton(
               onPressed: () {
                 controller.setShowUserStroke(!controller.showUserStroke);
               },
               child: controller.showUserStroke
-                  ? Text('Hide user strokes')
-                  : Text('Show user strokes'),
+                  ? const Text('Hide user strokes')
+                  : const Text('Show user strokes'),
             ),
           ],
         ),

@@ -25,7 +25,7 @@ void main() {
     );
   });
 
-  test('Test non-existing stroke order retrieval', () async {
+  test('Test non-existing stroke order retrieval', () {
     final client = MockClient();
     when(client.get(any)).thenAnswer((_) async => http.Response('', 404));
     expect(
