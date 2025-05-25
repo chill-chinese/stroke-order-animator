@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:stroke_order_animator/src/distance_2_d.dart';
 import 'package:stroke_order_animator/stroke_order_animator.dart';
 
-import '../test_strokes.dart';
+import 'resources/test_strokes.dart';
 
 void main() {
   const tickerProvider = TestVSync();
