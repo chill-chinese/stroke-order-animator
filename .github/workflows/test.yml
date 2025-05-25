@@ -37,7 +37,6 @@ jobs:
 
       - run: flutter pub get
       - run: dart format --set-exit-if-changed .
-      - run: dart run build_runner build --delete-conflicting-outputs # Generate mocks
       - run: flutter analyze .
       - run: flutter test --test-randomize-ordering-seed=random --coverage
 
