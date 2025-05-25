@@ -77,4 +77,17 @@ void main() {
       StrokeOrder(strokeOrderJsons['永']!),
     );
   });
+
+  test('All stroke orders can be parsed', () {
+    for (final entry in strokeOrderJsons.entries) {
+      final character = entry.key;
+      final json = entry.value;
+
+      expect(
+        () => StrokeOrder(json),
+        returnsNormally,
+        reason: 'Parsing $character failed',
+      );
+    }
+  });
 }
