@@ -3,12 +3,12 @@ name: Run tests
 on:
   pull_request:
     types:
-    - opened
-    - synchronize
-    - reopened
+      - opened
+      - synchronize
+      - reopened
   push:
     branches:
-    - main
+      - main
   schedule:
     - cron: "0 0 * * 0" # Run on Sundays
 
@@ -20,36 +20,35 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
 
-    - uses: actions/checkout@v4
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          cache: true
 
-    - name: Install Flutter
-      uses: subosito/flutter-action@v2
-      with:
-        channel: 'stable'
-        cache: true
+      - name: Restore Dart cache
+        id: restore-dart-cache
+        uses: actions/cache/restore@v3
+        with:
+          path: .dart_tool
+          key: ${{ runner.os }}-dart-${{ hashFiles('**/pubspec.lock') }}-
 
-    - name: Restore Dart cache
-      id: restore-dart-cache
-      uses: actions/cache/restore@v3
-      with:
-        path: .dart_tool
-        key: ${{ runner.os }}-dart-${{ hashFiles('**/pubspec.lock') }}-
+      - run: flutter pub get
+      - run: dart format --set-exit-if-changed .
+      - run: dart run build_runner build --delete-conflicting-outputs # Generate mocks
+      - run: flutter analyze .
+      - run: flutter test --test-randomize-ordering-seed=random --coverage
 
-    - run: flutter pub get --enforce-lockfile
-    - run: dart format --set-exit-if-changed .
-    - run: dart run build_runner build --delete-conflicting-outputs # Generate mocks
-    - run: flutter analyze .
-    - run: flutter test --test-randomize-ordering-seed=random --coverage
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: chill-chinese/stroke-order-animator
 
-    - name: Upload coverage reports to Codecov
-      uses: codecov/codecov-action@v4.0.1
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        slug: chill-chinese/stroke-order-animator
-
-    - name: Save Dart cache
-      uses: actions/cache/save@v3
-      with:
-        path: .dart_tool
-        key: ${{ runner.os }}-dart-${{ hashFiles('**/pubspec.lock') }}-${{ github.run_id }}
+      - name: Save Dart cache
+        uses: actions/cache/save@v3
+        with:
+          path: .dart_tool
+          key: ${{ runner.os }}-dart-${{ hashFiles('**/pubspec.lock') }}-${{ github.run_id }}
