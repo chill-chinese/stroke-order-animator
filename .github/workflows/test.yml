@@ -28,22 +28,23 @@ jobs:
           channel: "stable"
           cache: true
 
-      - name: Restore Dart cache
-        id: restore-dart-cache
-        uses: actions/cache/restore@v3
-        with:
-          path: .dart_tool
-          key: ${{ runner.os }}-dart-${{ hashFiles('**/pubspec.lock') }}-
+      - name: Install just
+        run: sudo snap install --edge --classic just
 
-      - run: flutter pub get
-      - run: dart format --set-exit-if-changed .
-      - run: flutter analyze .
-      - run: flutter test --test-randomize-ordering-seed=random --coverage
+      - name: Install dependencies
+        run: just get-dependencies
+
+      - name: Run static analysis
+        run: just lint
+
+      - name: Run unit tests
+        run: just test
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4.0.1
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage/unit_test_lcov.info
           slug: chill-chinese/stroke-order-animator
 
       - name: Save Dart cache

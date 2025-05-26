@@ -20,10 +20,13 @@ jobs:
       - name: Install Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          channel: "stable"
           cache: true
+
+      - name: Install just
+        run: sudo snap install --edge --classic just
 
       - name: Build and check docs
         run: |
-          flutter pub get
+          just get-dependencies
           dart doc

@@ -35,13 +35,13 @@ jobs:
           channel: "stable"
           cache: true
 
-      - name: Install dependencies
-        run: flutter pub get
+      - name: Install just
+        run: sudo snap install --edge --classic just
 
       - name: Build example web app
         run: |
           cd example
-          flutter pub get
+          just get-dependencies
           flutter build web --build-name ${{  github.ref_name }} --base-href /stroke-order-animator/
 
       - name: Set up GitHub Pages
