@@ -4,7 +4,7 @@ name: Publish to pub.dev
 on:
   push:
     tags:
-      - '[0-9]+.[0-9]+.[0-9]+*'
+      - "[0-9]+.[0-9]+.[0-9]+*"
 
 jobs:
   publish:
@@ -17,13 +17,14 @@ jobs:
       - name: Install Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          channel: "stable"
           cache: true
 
-      - uses: dart-lang/setup-dart@v1
+      - name: Install just
+        run: sudo snap install --edge --classic just
 
       - name: Install dependencies
-        run: flutter pub get
+        run: just get-dependencies
 
       - name: Bump version
         run: |
