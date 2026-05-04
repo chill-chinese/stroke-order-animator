@@ -79,10 +79,10 @@ class StrokeOrder {
       return rawMedians
           .map(
             (medianPoints) => (medianPoints as List).map<Offset>((point) {
-              point = point as List;
+              final point_ = point as List;
               return Offset(
-                (point[0] as num).toDouble(),
-                ((point[1] as num) * -1 + 900).toDouble(),
+                (point_[0] as num).toDouble(),
+                ((point_[1] as num) * -1 + 900).toDouble(),
               );
             }).toList(),
           )
