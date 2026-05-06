@@ -277,7 +277,24 @@ class StrokeOrderAnimationController extends ChangeNotifier {
       notifyListeners();
     }
   }
+  Future<void> nextStrokeAnimated() async {
+    if (isAnimating) stopAnimation();      
+    
+    startAnimation();
 
+    await _strokeAnimationController.forward();
+
+    stopAnimationWithoutAdvance();
+  }
+
+  void stopAnimationWithoutAdvance() {
+    if (_isAnimating) {
+      _isAnimating = false;
+      _strokeAnimationController.reset();
+      notifyListeners();
+    }
+  }
+  
   void previousStroke() {
     if (!_isQuizzing) {
       if (currentStroke != 0) {
